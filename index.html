@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Patrick 的中文小天地 ｜ 学习 + 小游戏</title>
+  <meta name="description" content="学习中文不必枯燥：边玩边学的小型网页游戏 + 预约上课入口。">
+  <style>
+    :root{
+      --bg:#0f172a; --card:#111827; --primary:#22c55e; --accent:#38bdf8;
+      --text:#e5e7eb; --muted:#9ca3af; --radius:16px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Noto Sans","Microsoft YaHei","PingFang SC",sans-serif}
+    a{color:inherit;text-decoration:none}
+    .container{max-width:1100px;margin:0 auto;padding:24px}
+    nav{position:sticky;top:0;backdrop-filter:blur(10px);background:rgba(10,14,25,.6);border-bottom:1px solid #1f2937;z-index:5}
+    .nav-inner{display:flex;gap:14px;align-items:center;justify-content:space-between;padding:12px 0}
+    .nav-links{display:flex;gap:12px;flex-wrap:wrap}
+    .pill{padding:8px 12px;border-radius:999px;border:1px solid #1f2937;background:#0b1220}
+    .pill:hover{border-color:#334155}
+    header{padding:48px 0 24px}
+    .hero{display:grid;gap:18px;padding:36px;border-radius:16px;background:linear-gradient(135deg,#0b1220 0%,#121a2e 100%);box-shadow:0 8px 24px rgba(0,0,0,.25)}
+    .hero h1{font-size:40px;line-height:1.2;margin:0}
+    .hero p{margin:4px 0 8px;color:var(--muted)}
+    .btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
+    .btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 18px;border-radius:12px;background:#22c55e;color:#062810;font-weight:700;transition:.2s;border:2px solid transparent}
+    .btn.secondary{background:#172554;color:#c7d2fe;border-color:#1e3a8a}
+    .btn:hover{transform:translateY(-1px);filter:brightness(1.05)}
+    section{margin:40px 0}
+    h2{font-size:28px;margin:0 0 12px}
+    .muted{color:var(--muted)}
+    .grid{display:grid;gap:16px;grid-template-columns:repeat(12,1fr)}
+    .card{grid-column:span 12;background:var(--card);border:1px solid #1f2937;border-radius:16px;padding:18px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+    .card h3{margin:0 0 6px;font-size:18px}
+    .card p{margin:0 0 10px;color:var(--muted)}
+    .card .actions{display:flex;gap:10px;flex-wrap:wrap}
+    .tag{display:inline-block;padding:4px 8px;border-radius:999px;background:#0b5;color:#021;font-weight:700;font-size:12px}
+    @media(min-width:720px){.card{grid-column:span 6}}
+    @media(min-width:1024px){.card{grid-column:span 4}}
+    .frame-wrap{position:relative;width:100%;padding-top:56.25%;border-radius:14px;overflow:hidden;border:1px solid #1f2937;background:#06080f}
+    .frame-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+    .anchor-pad{scroll-margin-top:100px}
+    footer{margin:48px 0 12px;text-align:center;color:var(--muted);font-size:14px}
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="container nav-inner">
+      <div><strong>Patrick 中文</strong></div>
+      <div class="nav-links">
+        <a class="pill" href="#games">小游戏</a>
+        <a class="pill" href="#booking">预约上课</a>
+        <a class="pill" href="#contact">联系</a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="container">
+    <div class="hero">
+      <h1>中文，不一定要枯燥。</h1>
+      <p>来，边玩边学。今天先玩一局，还是先订一节体验课？😎</p>
+      <div class="btns">
+        <a class="btn" href="#games">👉 开始玩游戏</a>
+        <a class="btn secondary" href="#booking">📅 预约上课</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section id="games" class="anchor-pad">
+      <h2>中文小游戏（边玩边学）</h2>
+      <p class="muted">玩着玩着就会了：词汇、拼音、反应力，一起升级。</p>
+      <div class="grid" style="margin-top:16px;">
+        <article class="card">
+          <span class="tag">推荐</span>
+          <h3>中文打字闯关（示例）</h3>
+          <p>打字打拼音、躲障碍、结算有分数。</p>
+          <div class="actions">
+            <a class="btn" href="https://your-game-1.example" target="_blank" rel="noopener">▶️ 新窗口开始玩</a>
+            <a class="btn secondary" href="#inline-game">或在本页内嵌试玩</a>
+          </div>
+        </article>
+        <article class="card">
+          <h3>拼音射击练习（示例）</h3>
+          <p>听音找字，射击消除。</p>
+          <div class="actions">
+            <a class="btn" href="https://your-game-2.example" target="_blank" rel="noopener">▶️ 新窗口开始玩</a>
+          </div>
+        </article>
+        <article class="card">
+          <h3>词汇翻翻看（示例）</h3>
+          <p>配对词义，记忆更扎实。</p>
+          <div class="actions">
+            <a class="btn" href="https://your-game-3.example" target="_blank" rel="noopener">▶️ 新窗口开始玩</a>
+          </div>
+        </article>
+      </div>
+
+      <div id="inline-game" style="margin-top:18px;">
+        <div class="frame-wrap">
+          <iframe src="https://your-game-1.example" allow="autoplay" title="中文打字闯关（内嵌试玩）"></iframe>
+        </div>
+        <p style="text-align:center;color:#9ca3af;margin-top:8px;">
+          如果内嵌无法加载，请
+          <a href="https://your-game-1.example" target="_blank" rel="noopener">点此全屏打开</a>。
+        </p>
+      </div>
+    </section>
+
+    <section id="booking" class="anchor-pad">
+      <h2>想更快提升中文？我们一起！</h2>
+      <p class="muted">一对一口语课、少儿中文、基础打牢专项。先来一节体验课，轻松上路。</p>
+      <div class="btns">
+        <a class="btn" href="https://cal.com/yourname/intro" target="_blank" rel="noopener">👉 立即预约</a>
+      </div>
+
+      <div class="card" style="margin-top:16px;">
+        <h3 style="margin-top:0;">内嵌预约（可选）</h3>
+        <div class="frame-wrap" style="padding-top:70%;">
+          <iframe src="https://cal.com/yourname/intro?layout=month" allow="camera; microphone; autoplay"></iframe>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px;">
+        <h3 style="margin-top:0;">直接购买课时包（可选）</h3>
+        <div style="text-align:center;">
+          <a class="btn" href="https://buy.stripe.com/your-payment-link" target="_blank" rel="noopener">💳 购买课时包</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="anchor-pad">
+      <h2>联系我</h2>
+      <div class="grid" style="margin-top:12px;">
+        <div class="card">
+          <h3>联系方式</h3>
+          <p class="muted">把你的联系方式换上去就能用：</p>
+          <p>📧 Email：<a href="mailto:yourname@email.com">yourname@email.com</a>
+          <br/>▶️ YouTube：<a href="https://youtube.com/@yourchannel" target="_blank" rel="noopener">@yourchannel</a>
+          <br/>💬 微信：添加后备注“学中文”（可把二维码图片放在这个区块）</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container" style="text-align:center;color:#9ca3af;">
+      给你一个轻松、有趣、有效的中文学习体验。🤗 © <script>document.write(new Date().getFullYear())</script> Patrick
+    </div>
+  </footer>
+</body>
+</html>
