@@ -1,171 +1,215 @@
-<!DOCTYPE html>
-
-
-
-<html lang="en">
+<!doctype html>
+<html lang="zh-CN">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Mandarin Lab ｜ Learning + Mini Games</title>
-  <meta name="description" content="Learn Chinese the fun way: play mini web games and book 1:1 lessons.">
-  <style>
-    :root{
-      --bg:#0f172a; --card:#111827; --primary:#22c55e; --accent:#38bdf8;
-      --text:#e5e7eb; --muted:#9ca3af; --radius:16px;
-    }
-    *{box-sizing:border-box}
-    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Noto Sans","Microsoft YaHei","PingFang SC",sans-serif}
-    a{color:inherit;text-decoration:none}
-    .container{max-width:1100px;margin:0 auto;padding:24px}
-    nav{position:sticky;top:0;backdrop-filter:blur(10px);background:rgba(10,14,25,.6);border-bottom:1px solid #1f2937;z-index:5}
-    .nav-inner{display:flex;gap:14px;align-items:center;justify-content:space-between;padding:12px 0}
-    .nav-links{display:flex;gap:12px;flex-wrap:wrap}
-    .pill{padding:8px 12px;border-radius:999px;border:1px solid #1f2937;background:#0b1220}
-    .pill:hover{border-color:#334155}
-    header{padding:48px 0 24px}
-    .hero{display:grid;gap:18px;padding:36px;border-radius:16px;background:linear-gradient(135deg,#0b1220 0%,#121a2e 100%);box-shadow:0 8px 24px rgba(0,0,0,.25)}
-    .hero h1{font-size:40px;line-height:1.2;margin:0}
-    .hero p{margin:4px 0 8px;color:var(--muted)}
-    .btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
-    .btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 18px;border-radius:12px;background:#22c55e;color:#062810;font-weight:700;transition:.2s;border:2px solid transparent}
-    .btn.secondary{background:#172554;color:#c7d2fe;border-color:#1e3a8a}
-    .btn:hover{transform:translateY(-1px);filter:brightness(1.05)}
-    section{margin:40px 0}
-    h2{font-size:28px;margin:0 0 12px}
-    .muted{color:var(--muted)}
-    .grid{display:grid;gap:16px;grid-template-columns:repeat(12,1fr)}
-    .card{grid-column:span 12;background:var(--card);border:1px solid #1f2937;border-radius:16px;padding:18px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
-    .card h3{margin:0 0 6px;font-size:18px}
-    .card p{margin:0 0 10px;color:var(--muted)}
-    .card .actions{display:flex;gap:10px;flex-wrap:wrap}
-    .tag{display:inline-block;padding:4px 8px;border-radius:999px;background:#0b5;color:#021;font-weight:700;font-size:12px}
-    @media(min-width:720px){.card{grid-column:span 6}}
-    @media(min-width:1024px){.card{grid-column:span 4}}
-    .frame-wrap{position:relative;width:100%;padding-top:56.25%;border-radius:14px;overflow:hidden;border:1px solid #1f2937;background:#06080f}
-    .frame-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-    .anchor-pad{scroll-margin-top:100px}
-    footer{margin:48px 0 12px;text-align:center;color:var(--muted);font-size:14px}
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Patrick 中文学习 · 游戏中心</title>
+<style>
+  :root { --radius:16px; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif; margin: 24px; color:#111; background:#fafafa; }
+  header { max-width:1100px; margin:0 auto 18px; }
+  h1 { font-size: 28px; margin: 0 0 8px; }
+  .sub { color:#555; margin:0 0 18px; }
+  .grid { max-width:1100px; margin:0 auto; display:grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap:18px; }
+  .card { background:#fff; border:1px solid #e9e9e9; border-radius: var(--radius); box-shadow: 0 1px 6px rgba(0,0,0,.04); display:flex; flex-direction:column; overflow:hidden; }
+  .thumb { position:relative; background:#f2f2f2; aspect-ratio:16/9; }
+  .frameWrap { position:relative; width:100%; height:100%; }
+  iframe { position:absolute; inset:0; width:100%; height:100%; border:0; }
+  .loading { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.85)); font-size:14px; }
+  .spinner { width:22px; height:22px; border:3px solid #ddd; border-top-color:#222; border-radius:50%; animation:spin 1s linear infinite; margin-right:8px; }
+  @keyframes spin { to { transform: rotate(360deg);} }
+  .body { padding:14px 14px 16px; display:flex; flex-direction:column; gap:10px; }
+  .title { font-size:18px; font-weight:600; }
+  .desc { color:#555; font-size:14px; line-height:1.5; }
+  .btns { display:flex; gap:8px; flex-wrap:wrap; }
+  .btn { appearance:none; border:1px solid #ddd; background:#fff; border-radius:12px; padding:8px 12px; cursor:pointer; font-size:14px; }
+  .btn.primary { background:#111; color:#fff; border-color:#111; }
+  .btn:disabled { opacity:.55; cursor:not-allowed; }
+  footer { max-width:1100px; margin:26px auto 0; color:#666; font-size:13px; line-height:1.6; }
+  code { background:#f4f4f4; padding:2px 6px; border-radius:6px; }
+</style>
 </head>
 <body>
-  <nav>
-    <div class="container nav-inner">
-      <div><strong>Patrick Chinese</strong></div>
-      <div class="nav-links">
-        <a class="pill" href="#games">Games</a>
-        <a class="pill" href="#booking">Book a Lesson</a>
-        <a class="pill" href="#contact">Contact</a>
-      </div>
-    </div>
-  </nav>
-  <script>
-// 解锁 WebAudio（首次用户交互）
-(function () {
-  const unlock = () => {
-    try {
-      const ctx = window._audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-      window._audioCtx = ctx;
-      if (ctx.state === 'suspended') ctx.resume();
-    } catch(e){}
-    window.removeEventListener('pointerdown', unlock);
-    window.removeEventListener('keydown', unlock);
-  };
-  window.addEventListener('pointerdown', unlock);
-  window.addEventListener('keydown', unlock);
-})();
-</script>
-
-  <header class="container">
-    <div class="hero">
-      <h1>Chinese doesn’t have to be boring.</h1>
-      <p>Play and learn. Start a game or book a trial lesson today. 😎</p>
-      <div class="btns">
-        <a class="btn" href="#games">👉 Start Playing</a>
-        <a class="btn secondary" href="#booking">📅 Book a Lesson</a>
-      </div>
-    </div>
+  <header>
+    <h1>Patrick 中文学习 · 游戏中心</h1>
+    <p class="sub">课堂小游戏 + 词汇训练。点击进入或直接在卡片里玩。第一次点击会顺便“解锁音频”。</p>
   </header>
 
-  <main class="container">
-    <section id="games" class="anchor-pad">
-      <h2>Mini Chinese Games</h2>
-      <p class="muted">Grow your vocab, pinyin skills, and reaction time—while having fun.</p>
-      <div class="grid" style="margin-top:16px;">
-        <article class="card">
-          <span class="tag">Featured</span>
-          <h3>Typing Adventure (Demo)</h3>
-          <p>Type pinyin, dodge obstacles, and get your score.</p>
-          <div class="actions">
-            <a class="btn" href="https://your-game-1.example" target="_blank" rel="noopener">▶️ Open in New Tab</a>
-            <a class="btn secondary" href="#inline-game">or Try Inline</a>
-          </div>
-        </article>
-        <article class="card">
-          <h3>Pinyin Shooter (Demo)</h3>
-          <p>Listen and shoot the matching character.</p>
-          <div class="actions">
-            <a class="btn" href="https://your-game-2.example" target="_blank" rel="noopener">▶️ Open in New Tab</a>
-          </div>
-        </article>
-        <article class="card">
-          <h3>Vocab Memory (Demo)</h3>
-          <p>Match words and meanings for solid recall.</p>
-          <div class="actions">
-            <a class="btn" href="https://your-game-3.example" target="_blank" rel="noopener">▶️ Open in New Tab</a>
-          </div>
-        </article>
-      </div>
-
-      <div id="inline-game" style="margin-top:18px;">
-        <div class="frame-wrap">
-          <iframe src="https://your-game-1.example" allow="autoplay" title="Typing Adventure (Inline)"></iframe>
-        </div>
-        <p style="text-align:center;color:#9ca3af;margin-top:8px;">
-          Having trouble loading inline? <a href="https://your-game-1.example" target="_blank" rel="noopener">Open full screen</a>.
-        </p>
-      </div>
-    </section>
-
-    <section id="booking" class="anchor-pad">
-      <h2>Level up faster—together.</h2>
-      <p class="muted">1:1 speaking practice, kids’ Chinese, and solid foundations. Start with a friendly trial lesson.</p>
-      <div class="btns">
-        <a class="btn" href="https://cal.com/yourname/intro" target="_blank" rel="noopener">👉 Book Now</a>
-      </div>
-
-      <div class="card" style="margin-top:16px;">
-        <h3 style="margin-top:0;">Inline Booking (Optional)</h3>
-        <div class="frame-wrap" style="padding-top:70%;">
-          <iframe src="https://cal.com/yourname/intro?layout=month" allow="camera; microphone; autoplay"></iframe>
+  <section class="grid" id="gamesGrid">
+    <!-- 游戏卡片 1（已配置你的在线地址） -->
+    <article class="card" data-game
+      data-url="https://shipeng57124.github.io/mandarin-lab/shooting_characters_web.tonal_game.10.28.html"
+      data-title="射击词汇练习（HSK）">
+      <div class="thumb">
+        <div class="frameWrap">
+          <div class="loading"><div class="spinner"></div>加载中…</div>
+          <iframe allow="gamepad *; fullscreen" loading="lazy" referrerpolicy="no-referrer"></iframe>
         </div>
       </div>
-
-      <div class="card" style="margin-top:16px;">
-        <h3 style="margin-top:0;">Buy Lesson Package (Optional)</h3>
-        <div style="text-align:center;">
-          <a class="btn" href="https://buy.stripe.com/your-payment-link" target="_blank" rel="noopener">💳 Purchase</a>
+      <div class="body">
+        <div class="title">射击词汇练习（HSK）</div>
+        <div class="desc">键盘操作；包含词库与音效（若无音效，请点“新标签打开”后再回来）。</div>
+        <div class="btns">
+          <button class="btn primary" data-action="open">新标签打开</button>
+          <button class="btn" data-action="embed">内嵌播放</button>
+          <button class="btn" data-action="unlock">解锁音频</button>
+          <button class="btn" data-action="fullscreen">全屏</button>
         </div>
       </div>
-    </section>
+    </article>
 
-    <section id="contact" class="anchor-pad">
-      <h2>Contact</h2>
-      <div class="grid" style="margin-top:12px;">
-        <div class="card">
-          <h3>How to reach me</h3>
-          <p class="muted">Replace with your actual info:</p>
-          <p>📧 Email: <a href="mailto:yourname@email.com">yourname@email.com</a>
-          <br/>▶️ YouTube: <a href="https://youtube.com/@yourchannel" target="_blank" rel="noopener">@yourchannel</a>
-          <br/>💬 WeChat: Add me and say “Chinese learner”. (You can put a QR image in this section.)</p>
+    <!-- 游戏卡片 2（占位，改成你的第二个游戏链接） -->
+    <article class="card" data-game
+      data-url="https://example.com/your-second-game.html"
+      data-title="你的第二个游戏（占位）">
+      <div class="thumb">
+        <div class="frameWrap">
+          <div class="loading"><div class="spinner"></div>等待加载…</div>
+          <iframe allow="gamepad *; fullscreen" loading="lazy" referrerpolicy="no-referrer"></iframe>
         </div>
       </div>
-    </section>
-  </main>
+      <div class="body">
+        <div class="title">你的第二个游戏（占位）</div>
+        <div class="desc">把 data-url 改成你的真实地址即可。</div>
+        <div class="btns">
+          <button class="btn primary" data-action="open">新标签打开</button>
+          <button class="btn" data-action="embed">内嵌播放</button>
+          <button class="btn" data-action="unlock">解锁音频</button>
+          <button class="btn" data-action="fullscreen">全屏</button>
+        </div>
+      </div>
+    </article>
+
+    <!-- 游戏卡片 3（占位） -->
+    <article class="card" data-game
+      data-url="https://example.com/your-third-game.html"
+      data-title="你的第三个游戏（占位）">
+      <div class="thumb">
+        <div class="frameWrap">
+          <div class="loading"><div class="spinner"></div>等待加载…</div>
+          <iframe allow="gamepad *; fullscreen" loading="lazy" referrerpolicy="no-referrer"></iframe>
+        </div>
+      </div>
+      <div class="body">
+        <div class="title">你的第三个游戏（占位）</div>
+        <div class="desc">同样方法替换链接即可上线多个游戏。</div>
+        <div class="btns">
+          <button class="btn primary" data-action="open">新标签打开</button>
+          <button class="btn" data-action="embed">内嵌播放</button>
+          <button class="btn" data-action="unlock">解锁音频</button>
+          <button class="btn" data-action="fullscreen">全屏</button>
+        </div>
+      </div>
+    </article>
+  </section>
 
   <footer>
-    <div class="container" style="text-align:center;color:#9ca3af;">
-      A light, fun, and effective way to learn Chinese. 🤗 © <script>document.write(new Date().getFullYear())</script> Patrick
-    </div>
+    <p>音频问题提示：</p>
+    <ol>
+      <li><b>大小写严格一致</b>：线上主机区分大小写，<code>sfx/hit.mp3</code> 与 <code>sfx/hit.MP3</code> 不同。确保实际文件名与代码一致（推荐全部小写）。</li>
+      <li><b>第一次交互解锁</b>：浏览器需要用户点击/按键来允许音频。父页已发送“解锁”消息给子页，<u>但子页也需要接收器</u>（见下方“游戏页接收器”）。</li>
+      <li><b>备用打开</b>：若内嵌无声或被 X-Frame-Options 拦截，点击“新标签打开”或直接访问游戏链接。</li>
+    </ol>
+    <p>（可选）把下面“接收器”代码加到你的 <code>shooting_characters_web.tonal_game.10.28.html</code> 或其主 JS 顶部，可配合父页自动解锁音频：</p>
+    <pre><code>&lt;script&gt;
+(function(){
+  // 子页：接收父页 postMessage，执行 AudioContext 解锁
+  function unlockAudio(){
+    try{
+      const ctx = window._audioCtx || new (window.AudioContext||window.webkitAudioContext)();
+      window._audioCtx = ctx;
+      if(ctx.state === 'suspended') ctx.resume();
+    }catch(e){}
+  }
+  window.addEventListener('message', (e)=>{
+    // 可根据需要校验来源 e.origin
+    if(e && e.data === 'UNLOCK_AUDIO'){ unlockAudio(); }
+  });
+
+  // 同时也绑定本页的首次交互（保险）
+  const once = ()=>{ unlockAudio();
+    window.removeEventListener('pointerdown', once);
+    window.removeEventListener('keydown', once);
+  };
+  window.addEventListener('pointerdown', once);
+  window.addEventListener('keydown', once);
+})();
+&lt;/script&gt;</code></pre>
   </footer>
+
+<script>
+(function(){
+  // 工具函数
+  const qs = (sel, el=document) => el.querySelector(sel);
+  const qsa = (sel, el=document) => [...el.querySelectorAll(sel)];
+
+  // 初始化所有卡片
+  qsa('[data-game]').forEach(card => {
+    const url = card.getAttribute('data-url');
+    const title = card.getAttribute('data-title') || '游戏';
+    const frame = qs('iframe', card);
+    const loading = qs('.loading', card);
+    const openBtn = qsa('[data-action="open"]', card)[0];
+    const embedBtn = qsa('[data-action="embed"]', card)[0];
+    const unlockBtn = qsa('[data-action="unlock"]', card)[0];
+    const fullscreenBtn = qsa('[data-action="fullscreen"]', card)[0];
+
+    // 新标签打开
+    openBtn.addEventListener('click', () => {
+      window.open(url, '_blank', 'noopener');
+    });
+
+    // 内嵌加载
+    embedBtn.addEventListener('click', () => {
+      if (!frame.src) {
+        frame.src = url;
+        loading.style.display = 'flex';
+        frame.addEventListener('load', () => {
+          loading.style.display = 'none';
+        }, { once: true });
+      } else {
+        // 已经加载过就滚动到 iframe 位置
+        frame.scrollIntoView({ behavior:'smooth', block:'center' });
+      }
+    });
+
+    // 发送“解锁音频”消息（需要子页安装接收器脚本才能生效）
+    unlockBtn.addEventListener('click', () => {
+      try {
+        // 如果未内嵌，先内嵌（保障拿到 contentWindow）
+        if (!frame.src) { embedBtn.click(); }
+        // 稍等一帧再 postMessage
+        setTimeout(() => {
+          if (frame.contentWindow) {
+            frame.contentWindow.postMessage('UNLOCK_AUDIO', '*');
+          }
+        }, 250);
+      } catch (e) {}
+    });
+
+    // 全屏
+    fullscreenBtn.addEventListener('click', async () => {
+      const wrap = qs('.frameWrap', card);
+      if (!frame.src) { embedBtn.click(); }
+      try {
+        if (wrap.requestFullscreen) await wrap.requestFullscreen();
+        else if (wrap.webkitRequestFullscreen) await wrap.webkitRequestFullscreen();
+      } catch(e){}
+    });
+  });
+
+  // 在父页也绑定一次“首次交互”→ 触发一次解锁（为了给同域/允许接收的子页一个机会）
+  const fireBroadcast = () => {
+    const frames = qsa('iframe');
+    frames.forEach(f => {
+      try { f.contentWindow && f.contentWindow.postMessage('UNLOCK_AUDIO', '*'); } catch(e){}
+    });
+    window.removeEventListener('pointerdown', fireBroadcast);
+    window.removeEventListener('keydown', fireBroadcast);
+  };
+  window.addEventListener('pointerdown', fireBroadcast);
+  window.addEventListener('keydown', fireBroadcast);
+})();
+</script>
 </body>
 </html>
