@@ -1,11 +1,6 @@
 <!DOCTYPE html>
 
 
-<a href="https://shipeng57124.github.io/mandarin-lab/shooting_characters_web.tonal_game.10.28.html
-" target="_blank" rel="noopener" style="display:inline-block;padding:12px 18px;border-radius:8px;border:1px solid #ddd;text-decoration:none">
-  🎮 立刻开始游戏
-</a>
-
 
 <html lang="en">
 <head>
@@ -63,6 +58,22 @@
       </div>
     </div>
   </nav>
+  <script>
+// 解锁 WebAudio（首次用户交互）
+(function () {
+  const unlock = () => {
+    try {
+      const ctx = window._audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      window._audioCtx = ctx;
+      if (ctx.state === 'suspended') ctx.resume();
+    } catch(e){}
+    window.removeEventListener('pointerdown', unlock);
+    window.removeEventListener('keydown', unlock);
+  };
+  window.addEventListener('pointerdown', unlock);
+  window.addEventListener('keydown', unlock);
+})();
+</script>
 
   <header class="container">
     <div class="hero">
