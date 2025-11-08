@@ -1,158 +1,154 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Patrick Chinese ｜ Learning + Mini Games</title>
-  <meta name="description" content="Learn Chinese the fun way: play mini web games and book 1:1 lessons.">
+  <title>Mandarin Lab ｜ Learn + Play Chinese</title>
+  <meta name="description" content="Mandarin Lab — Learn Chinese the fun way: play mini web games and book 1:1 lessons.">
   <style>
-    :root{
-      --bg:#0f172a; --card:#111827; --primary:#22c55e; --accent:#38bdf8;
-      --text:#e5e7eb; --muted:#9ca3af; --radius:16px;
-    }
+    :root{--bg:#0f172a;--card:#111827;--text:#e5e7eb;--muted:#9ca3af;--brand:#22c55e;--radius:16px}
     *{box-sizing:border-box}
-    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Noto Sans","Microsoft YaHei","PingFang SC",sans-serif}
+    html,body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,Segoe UI,Arial,"Noto Sans","Microsoft YaHei","PingFang SC",sans-serif}
     a{color:inherit;text-decoration:none}
-    .container{max-width:1100px;margin:0 auto;padding:24px}
-    nav{position:sticky;top:0;backdrop-filter:blur(10px);background:rgba(10,14,25,.6);border-bottom:1px solid #1f2937;z-index:5}
-    .nav-inner{display:flex;gap:14px;align-items:center;justify-content:space-between;padding:12px 0}
-    .nav-links{display:flex;gap:12px;flex-wrap:wrap}
-    .pill{padding:8px 12px;border-radius:999px;border:1px solid #1f2937;background:#0b1220}
-    .pill:hover{border-color:#334155}
-    header{padding:48px 0 24px}
-    .hero{display:grid;gap:18px;padding:36px;border-radius:16px;background:linear-gradient(135deg,#0b1220 0%,#121a2e 100%);box-shadow:0 8px 24px rgba(0,0,0,.25)}
-    .hero h1{font-size:40px;line-height:1.2;margin:0}
-    .hero p{margin:4px 0 8px;color:var(--muted)}
-    .btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
-    .btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 18px;border-radius:12px;background:#22c55e;color:#062810;font-weight:700;transition:.2s;border:2px solid transparent}
+    .wrap{max-width:1100px;margin:0 auto;padding:24px}
+    .nav{position:sticky;top:0;backdrop-filter:blur(8px);background:rgba(8,12,24,.6);border-bottom:1px solid #1f2937;z-index:5}
+    .nav-in{display:flex;justify-content:space-between;align-items:center;padding:12px 0}
+    .pill{display:inline-flex;gap:8px;border:1px solid #1f2937;padding:8px 12px;border-radius:999px;background:#0b1220}
+    header{padding:42px 0 22px}
+    .hero{display:grid;gap:16px;padding:28px;border-radius:var(--radius);background:linear-gradient(135deg,#0b1220 0%,#121a2e 100%);box-shadow:0 8px 24px rgba(0,0,0,.25)}
+    .hero h1{font-size:clamp(28px,4.2vw,40px);margin:0}
+    .hero p{margin:6px 0 10px;color:#cbd5e1}
+    .btns{display:flex;gap:12px;flex-wrap:wrap}
+    .btn{appearance:none;border:2px solid transparent;background:var(--brand);color:#052b14;font-weight:700;border-radius:12px;padding:12px 16px;cursor:pointer}
     .btn.secondary{background:#172554;color:#c7d2fe;border-color:#1e3a8a}
-    .btn:hover{transform:translateY(-1px);filter:brightness(1.05)}
-    section{margin:40px 0}
-    h2{font-size:28px;margin:0 0 12px}
+    section{margin:36px 0}
+    h2{font-size:26px;margin:0 0 8px}
     .muted{color:var(--muted)}
     .grid{display:grid;gap:16px;grid-template-columns:repeat(12,1fr)}
-    .card{grid-column:span 12;background:var(--card);border:1px solid #1f2937;border-radius:16px;padding:18px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
-    .card h3{margin:0 0 6px;font-size:18px}
-    .card p{margin:0 0 10px;color:var(--muted)}
-    .card .actions{display:flex;gap:10px;flex-wrap:wrap}
-    .tag{display:inline-block;padding:4px 8px;border-radius:999px;background:#0b5;color:#021;font-weight:700;font-size:12px}
+    .card{grid-column:span 12;background:var(--card);border:1px solid #1f2937;border-radius:var(--radius);padding:18px}
     @media(min-width:720px){.card{grid-column:span 6}}
     @media(min-width:1024px){.card{grid-column:span 4}}
-    .frame-wrap{position:relative;width:100%;padding-top:56.25%;border-radius:14px;overflow:hidden;border:1px solid #1f2937;background:#06080f}
-    .frame-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-    .anchor-pad{scroll-margin-top:100px}
-    footer{margin:48px 0 12px;text-align:center;color:var(--muted);font-size:14px}
+    .card h3{margin:0 0 6px;font-size:18px}
+    .card p{margin:0 0 12px;color:var(--muted)}
+    .tag{display:inline-block;padding:4px 8px;border-radius:999px;background:#0b5;color:#021;font-weight:700;font-size:12px;margin-bottom:8px}
+    .actions{display:flex;gap:10px;flex-wrap:wrap}
+    .frame{position:relative;width:100%;padding-top:56.25%;border-radius:12px;overflow:hidden;border:1px solid #1f2937;background:#06080f}
+    iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+    .anchor{scroll-margin-top:100px}
+    footer{margin:40px 0 10px;color:#9aa3b2;font-size:14px;text-align:center}
   </style>
 </head>
 <body>
-  <nav>
-    <div class="container nav-inner">
-      <div><strong>Patrick Chinese</strong></div>
-      <div class="nav-links">
+  <div class="nav">
+    <div class="wrap nav-in">
+      <strong>Mandarin Lab</strong>
+      <div class="links">
         <a class="pill" href="#games">Games</a>
         <a class="pill" href="#booking">Book a Lesson</a>
         <a class="pill" href="#contact">Contact</a>
       </div>
     </div>
-  </nav>
+  </div>
 
-  <header class="container">
+  <header class="wrap">
     <div class="hero">
-      <h1>Chinese doesn’t have to be boring.</h1>
-      <p>Play and learn. Start a game or book a trial lesson today. 😎</p>
+      <h1>Learn Chinese the fun way.</h1>
+      <p>Play a mini game or book a friendly 1:1 lesson today.</p>
       <div class="btns">
-        <a class="btn" href="#games">👉 Start Playing</a>
+        <a class="btn" href="#games">▶ Start Playing</a>
         <a class="btn secondary" href="#booking">📅 Book a Lesson</a>
       </div>
     </div>
   </header>
 
-  <main class="container">
-    <section id="games" class="anchor-pad">
+  <main class="wrap">
+    <section id="games" class="anchor">
       <h2>Mini Chinese Games</h2>
       <p class="muted">Grow your vocab, pinyin skills, and reaction time—while having fun.</p>
-      <div class="grid" style="margin-top:16px;">
-        <!-- Game Card 1: your real game -->
+
+      <div class="grid" style="margin-top:14px;">
+        <!-- Game 1: real game -->
         <article class="card">
           <span class="tag">Featured</span>
           <h3>Typing Adventure (HSK)</h3>
-          <p>Type pinyin, dodge obstacles, and get your score.</p>
+          <p>Type pinyin, dodge obstacles, and earn your score.</p>
           <div class="actions">
-            <a class="btn" href="https://shipeng57124.github.io/mandarin-lab/shooting_characters_web.tonal_game.10.28.html" target="_blank" rel="noopener">▶️ Open in New Tab</a>
-            <a class="btn secondary" href="#inline-game">or Try Inline</a>
+            <a class="btn" target="_blank" rel="noopener"
+               href="https://shipeng57124.github.io/mandarin-lab/shooting_characters_web.tonal_game.10.28.html">Open in New Tab</a>
+            <a class="btn secondary" href="#inline">or Try Inline</a>
           </div>
         </article>
 
-        <!-- Placeholder cards: replace later if needed -->
+        <!-- Game 2: coming soon -->
         <article class="card">
-          <h3>Pinyin Shooter (Demo)</h3>
+          <span class="tag" style="background:#4b5563;color:#e5e7eb;">Coming Soon</span>
+          <h3>Pinyin Shooter</h3>
           <p>Listen and shoot the matching character.</p>
           <div class="actions">
-            <a class="btn" href="#" onclick="alert('Add your second game link here later');return false;">▶️ Open in New Tab</a>
+            <button class="btn secondary" disabled>Open in New Tab</button>
           </div>
         </article>
+
+        <!-- Game 3: coming soon -->
         <article class="card">
-          <h3>Vocab Memory (Demo)</h3>
+          <span class="tag" style="background:#4b5563;color:#e5e7eb;">Coming Soon</span>
+          <h3>Vocab Memory</h3>
           <p>Match words and meanings for solid recall.</p>
           <div class="actions">
-            <a class="btn" href="#" onclick="alert('Add your third game link here later');return false;">▶️ Open in New Tab</a>
+            <button class="btn secondary" disabled>Open in New Tab</button>
           </div>
         </article>
       </div>
 
-      <!-- Inline play -->
-      <div id="inline-game" style="margin-top:18px;">
-        <div class="frame-wrap">
-          <iframe id="gameFrame" src="about:blank" allow="autoplay; gamepad *; fullscreen" title="Typing Adventure (Inline)"></iframe>
+      <!-- Inline play area -->
+      <div id="inline" style="margin-top:16px;">
+        <div class="frame">
+          <iframe id="gameFrame" src="about:blank"
+                  allow="autoplay; gamepad *; fullscreen"
+                  title="Typing Adventure (Inline)"></iframe>
         </div>
         <p style="text-align:center;color:#9ca3af;margin-top:8px;">
-          Having trouble loading inline? <a href="https://shipeng57124.github.io/mandarin-lab/shooting_characters_web.tonal_game.10.28.html" target="_blank" rel="noopener">Open full screen</a>.
+          Trouble loading inline? <a target="_blank" rel="noopener"
+          href="https://shipeng57124.github.io/mandarin-lab/shooting_characters_web.tonal_game.10.28.html">Open the full game</a>.
         </p>
       </div>
     </section>
 
-    <section id="booking" class="anchor-pad">
+    <section id="booking" class="anchor">
       <h2>Level up faster—together.</h2>
       <p class="muted">1:1 speaking practice, kids’ Chinese, and solid foundations. Start with a friendly trial lesson.</p>
       <div class="btns">
-        <a class="btn" href="#" onclick="alert('Replace with your booking link');return false;">👉 Book Now</a>
+        <a class="btn" href="#" onclick="alert('Replace with your booking link');return false;">Book Now</a>
       </div>
     </section>
 
-    <section id="contact" class="anchor-pad">
+    <section id="contact" class="anchor">
       <h2>Contact</h2>
       <div class="grid" style="margin-top:12px;">
-        <div class="card">
+        <article class="card" style="grid-column:span 12;">
           <h3>How to reach me</h3>
           <p class="muted">Replace with your actual info:</p>
-          <p>📧 Email: <a href="mailto:yourname@email.com">yourname@email.com</a>
-          <br/>▶️ YouTube: <a href="https://youtube.com/@yourchannel" target="_blank" rel="noopener">@yourchannel</a>
-          <br/>💬 WeChat: Add me and say “Chinese learner”.</p>
-        </div>
+          <p>📧 Email: <a href="mailto:your@email.com">your@email.com</a><br/>
+             ▶️ YouTube: <a href="https://youtube.com/@yourchannel" target="_blank" rel="noopener">@yourchannel</a><br/>
+             💬 WeChat: Add me and say “Chinese learner”.</p>
+        </article>
       </div>
     </section>
   </main>
 
-  <footer>
-    <div class="container" style="text-align:center;color:#9ca3af;">
-      A light, fun, and effective way to learn Chinese. 🤗 © <script>document.write(new Date().getFullYear())</script> Patrick
-    </div>
-  </footer>
+  <footer>© <script>document.write(new Date().getFullYear())</script> Mandarin Lab · Learn + Play Chinese</footer>
 
-  <!-- Tiny helper: load inline game + send audio-unlock signal on first interaction -->
+  <!-- Inline loader + simple audio-unlock broadcast -->
   <script>
     const INLINE_URL = "https://shipeng57124.github.io/mandarin-lab/shooting_characters_web.tonal_game.10.28.html";
     const frame = document.getElementById('gameFrame');
-
-    // When user clicks "Try Inline" card link, load the iframe
-    document.querySelector('a[href="#inline-game"]').addEventListener('click', (e)=>{
-      // allow default hash jump, then load game
+    // load when clicking "Try Inline"
+    document.querySelector('a[href="#inline"]').addEventListener('click', ()=>{
       setTimeout(()=>{ if(frame && !frame.src) frame.src = INLINE_URL; }, 0);
     });
-
-    // Broadcast a simple unlock message to the game page (if it listens)
+    // try to unlock audio in child (if it listens)
     function postUnlock(){ try{ frame.contentWindow && frame.contentWindow.postMessage('UNLOCK_AUDIO','*'); }catch(e){} }
-    function firstGesture(){ postUnlock(); window.removeEventListener('pointerdown', firstGesture); window.removeEventListener('keydown', firstGesture); }
+    function firstGesture(){ if(frame.src) postUnlock(); window.removeEventListener('pointerdown', firstGesture); window.removeEventListener('keydown', firstGesture); }
     window.addEventListener('pointerdown', firstGesture);
     window.addEventListener('keydown',  firstGesture);
   </script>
