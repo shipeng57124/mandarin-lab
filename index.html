@@ -1,215 +1,106 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Patrick 中文学习 · 游戏中心</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Patrick 中文学习 | 首页</title>
 <style>
-  :root { --radius:16px; }
-  body { font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif; margin: 24px; color:#111; background:#fafafa; }
-  header { max-width:1100px; margin:0 auto 18px; }
-  h1 { font-size: 28px; margin: 0 0 8px; }
-  .sub { color:#555; margin:0 0 18px; }
-  .grid { max-width:1100px; margin:0 auto; display:grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap:18px; }
-  .card { background:#fff; border:1px solid #e9e9e9; border-radius: var(--radius); box-shadow: 0 1px 6px rgba(0,0,0,.04); display:flex; flex-direction:column; overflow:hidden; }
-  .thumb { position:relative; background:#f2f2f2; aspect-ratio:16/9; }
-  .frameWrap { position:relative; width:100%; height:100%; }
-  iframe { position:absolute; inset:0; width:100%; height:100%; border:0; }
-  .loading { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.85)); font-size:14px; }
-  .spinner { width:22px; height:22px; border:3px solid #ddd; border-top-color:#222; border-radius:50%; animation:spin 1s linear infinite; margin-right:8px; }
-  @keyframes spin { to { transform: rotate(360deg);} }
-  .body { padding:14px 14px 16px; display:flex; flex-direction:column; gap:10px; }
-  .title { font-size:18px; font-weight:600; }
-  .desc { color:#555; font-size:14px; line-height:1.5; }
-  .btns { display:flex; gap:8px; flex-wrap:wrap; }
-  .btn { appearance:none; border:1px solid #ddd; background:#fff; border-radius:12px; padding:8px 12px; cursor:pointer; font-size:14px; }
-  .btn.primary { background:#111; color:#fff; border-color:#111; }
-  .btn:disabled { opacity:.55; cursor:not-allowed; }
-  footer { max-width:1100px; margin:26px auto 0; color:#666; font-size:13px; line-height:1.6; }
-  code { background:#f4f4f4; padding:2px 6px; border-radius:6px; }
+  :root{--bg:#0f172a;--card:#111827;--text:#e5e7eb;--muted:#9ca3af;--brand:#22c55e;--btn:#16a34a;--radius:16px}
+  *{box-sizing:border-box}
+  body{margin:0;background:linear-gradient(180deg,#0b1024,#0f172a 40%,#0b1226);font:16px/1.6 system-ui,Segoe UI,Arial,sans-serif;color:var(--text)}
+  .wrap{max-width:1100px;margin:0 auto;padding:24px}
+  .nav{display:flex;justify-content:space-between;align-items:center;padding:14px 0}
+  .nav a{color:var(--text);text-decoration:none}
+  .brand{font-weight:700;letter-spacing:.3px}
+  .pill{display:inline-flex;gap:8px;border:1px solid rgba(255,255,255,.12);padding:6px 12px;border-radius:999px;color:var(--muted)}
+  .hero{display:grid;grid-template-columns:1.15fr 1fr;gap:28px;align-items:center;padding:28px 0}
+  .hero h1{font-size:clamp(28px,4.6vw,44px);margin:0 0 10px}
+  .hero p{margin:0 0 18px;color:#cbd5e1}
+  .btns{display:flex;gap:12px;flex-wrap:wrap}
+  .btn{appearance:none;border:1px solid rgba(255,255,255,.14);background:#151a33;color:#fff;border-radius:12px;padding:12px 16px;cursor:pointer}
+  .btn.primary{background:var(--btn);border-color:transparent}
+  .card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:var(--radius);overflow:hidden}
+  .frameWrap{position:relative;width:100%;aspect-ratio:16/9}
+  iframe{position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:0}
+  .loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(10,12,26,.6);backdrop-filter:blur(6px)}
+  .spin{width:22px;height:22px;border:3px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:spin 1s linear infinite;margin-right:8px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .section{margin-top:38px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+  .tile{padding:16px;border-radius:var(--radius);background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08)}
+  .muted{color:var(--muted)}
+  footer{margin:40px 0 10px;color:#9aa3b2;font-size:14px;text-align:center}
+  @media (max-width:860px){.hero{grid-template-columns:1fr}.frameWrap{margin-top:12px}}
 </style>
 </head>
 <body>
-  <header>
-    <h1>Patrick 中文学习 · 游戏中心</h1>
-    <p class="sub">课堂小游戏 + 词汇训练。点击进入或直接在卡片里玩。第一次点击会顺便“解锁音频”。</p>
-  </header>
+  <div class="wrap">
+    <div class="nav">
+      <div class="brand">Patrick 中文学习</div>
+      <a class="pill" href="#" onclick="alert('把你的订课链接换到这里');return false;">📅 订课链接</a>
+    </div>
 
-  <section class="grid" id="gamesGrid">
-    <!-- 游戏卡片 1（已配置你的在线地址） -->
-    <article class="card" data-game
-      data-url="https://shipeng57124.github.io/mandarin-lab/shooting_characters_web.tonal_game.10.28.html"
-      data-title="射击词汇练习（HSK）">
-      <div class="thumb">
-        <div class="frameWrap">
-          <div class="loading"><div class="spinner"></div>加载中…</div>
-          <iframe allow="gamepad *; fullscreen" loading="lazy" referrerpolicy="no-referrer"></iframe>
-        </div>
-      </div>
-      <div class="body">
-        <div class="title">射击词汇练习（HSK）</div>
-        <div class="desc">键盘操作；包含词库与音效（若无音效，请点“新标签打开”后再回来）。</div>
+    <section class="hero">
+      <div>
+        <div class="pill" style="margin-bottom:10px">🎮 学习 + 小游戏</div>
+        <h1>有趣、轻量、可直接在网页里玩的中文小游戏</h1>
+        <p>点“开始游戏”新开标签玩；或点“页面内试玩”在下方嵌入。首次点击也会顺便启用音效。</p>
         <div class="btns">
-          <button class="btn primary" data-action="open">新标签打开</button>
-          <button class="btn" data-action="embed">内嵌播放</button>
-          <button class="btn" data-action="unlock">解锁音频</button>
-          <button class="btn" data-action="fullscreen">全屏</button>
+          <a class="btn primary" target="_blank" rel="noopener"
+            href="https://shipeng57124.github.io/mandarin-lab/shooting_characters_web.tonal_game.10.28.html">开始游戏（新标签）</a>
+          <button class="btn" id="embedBtn">页面内试玩</button>
+          <button class="btn" id="unlockBtn">如果没声音，点这里启用音效</button>
         </div>
       </div>
-    </article>
 
-    <!-- 游戏卡片 2（占位，改成你的第二个游戏链接） -->
-    <article class="card" data-game
-      data-url="https://example.com/your-second-game.html"
-      data-title="你的第二个游戏（占位）">
-      <div class="thumb">
-        <div class="frameWrap">
-          <div class="loading"><div class="spinner"></div>等待加载…</div>
-          <iframe allow="gamepad *; fullscreen" loading="lazy" referrerpolicy="no-referrer"></iframe>
+      <div class="card">
+        <div class="frameWrap" id="frameWrap" hidden>
+          <div class="loading" id="loading"><div class="spin"></div>加载中…</div>
+          <iframe id="gameFrame" allow="gamepad *; fullscreen" loading="lazy" referrerpolicy="no-referrer"></iframe>
         </div>
       </div>
-      <div class="body">
-        <div class="title">你的第二个游戏（占位）</div>
-        <div class="desc">把 data-url 改成你的真实地址即可。</div>
-        <div class="btns">
-          <button class="btn primary" data-action="open">新标签打开</button>
-          <button class="btn" data-action="embed">内嵌播放</button>
-          <button class="btn" data-action="unlock">解锁音频</button>
-          <button class="btn" data-action="fullscreen">全屏</button>
-        </div>
-      </div>
-    </article>
+    </section>
 
-    <!-- 游戏卡片 3（占位） -->
-    <article class="card" data-game
-      data-url="https://example.com/your-third-game.html"
-      data-title="你的第三个游戏（占位）">
-      <div class="thumb">
-        <div class="frameWrap">
-          <div class="loading"><div class="spinner"></div>等待加载…</div>
-          <iframe allow="gamepad *; fullscreen" loading="lazy" referrerpolicy="no-referrer"></iframe>
-        </div>
+    <section class="section">
+      <h3 style="margin:0 0 10px">说明</h3>
+      <div class="grid">
+        <div class="tile"><b>首页美观</b><div class="muted">保持之前的清爽风格，按钮明显、对比强，移动端也好看。</div></div>
+        <div class="tile"><b>两种玩法</b><div class="muted">新标签打开最稳；页面内试玩方便课堂演示。</div></div>
+        <div class="tile"><b>音效提示</b><div class="muted">若无声：先点击页面任意处或“启用音效”，再开始游戏。</div></div>
       </div>
-      <div class="body">
-        <div class="title">你的第三个游戏（占位）</div>
-        <div class="desc">同样方法替换链接即可上线多个游戏。</div>
-        <div class="btns">
-          <button class="btn primary" data-action="open">新标签打开</button>
-          <button class="btn" data-action="embed">内嵌播放</button>
-          <button class="btn" data-action="unlock">解锁音频</button>
-          <button class="btn" data-action="fullscreen">全屏</button>
-        </div>
-      </div>
-    </article>
-  </section>
+    </section>
 
-  <footer>
-    <p>音频问题提示：</p>
-    <ol>
-      <li><b>大小写严格一致</b>：线上主机区分大小写，<code>sfx/hit.mp3</code> 与 <code>sfx/hit.MP3</code> 不同。确保实际文件名与代码一致（推荐全部小写）。</li>
-      <li><b>第一次交互解锁</b>：浏览器需要用户点击/按键来允许音频。父页已发送“解锁”消息给子页，<u>但子页也需要接收器</u>（见下方“游戏页接收器”）。</li>
-      <li><b>备用打开</b>：若内嵌无声或被 X-Frame-Options 拦截，点击“新标签打开”或直接访问游戏链接。</li>
-    </ol>
-    <p>（可选）把下面“接收器”代码加到你的 <code>shooting_characters_web.tonal_game.10.28.html</code> 或其主 JS 顶部，可配合父页自动解锁音频：</p>
-    <pre><code>&lt;script&gt;
-(function(){
-  // 子页：接收父页 postMessage，执行 AudioContext 解锁
-  function unlockAudio(){
-    try{
-      const ctx = window._audioCtx || new (window.AudioContext||window.webkitAudioContext)();
-      window._audioCtx = ctx;
-      if(ctx.state === 'suspended') ctx.resume();
-    }catch(e){}
-  }
-  window.addEventListener('message', (e)=>{
-    // 可根据需要校验来源 e.origin
-    if(e && e.data === 'UNLOCK_AUDIO'){ unlockAudio(); }
-  });
-
-  // 同时也绑定本页的首次交互（保险）
-  const once = ()=>{ unlockAudio();
-    window.removeEventListener('pointerdown', once);
-    window.removeEventListener('keydown', once);
-  };
-  window.addEventListener('pointerdown', once);
-  window.addEventListener('keydown', once);
-})();
-&lt;/script&gt;</code></pre>
-  </footer>
+    <footer>© 2025 Patrick · Mandarin Lab</footer>
+  </div>
 
 <script>
-(function(){
-  // 工具函数
-  const qs = (sel, el=document) => el.querySelector(sel);
-  const qsa = (sel, el=document) => [...el.querySelectorAll(sel)];
+  // 父页：内嵌 + 发送“启用音效”消息给子页
+  const url = "https://shipeng57124.github.io/mandarin-lab/shooting_characters_web.tonal_game.10.28.html";
+  const wrap = document.getElementById('frameWrap');
+  const frame = document.getElementById('gameFrame');
+  const loading = document.getElementById('loading');
+  const embedBtn = document.getElementById('embedBtn');
+  const unlockBtn = document.getElementById('unlockBtn');
 
-  // 初始化所有卡片
-  qsa('[data-game]').forEach(card => {
-    const url = card.getAttribute('data-url');
-    const title = card.getAttribute('data-title') || '游戏';
-    const frame = qs('iframe', card);
-    const loading = qs('.loading', card);
-    const openBtn = qsa('[data-action="open"]', card)[0];
-    const embedBtn = qsa('[data-action="embed"]', card)[0];
-    const unlockBtn = qsa('[data-action="unlock"]', card)[0];
-    const fullscreenBtn = qsa('[data-action="fullscreen"]', card)[0];
-
-    // 新标签打开
-    openBtn.addEventListener('click', () => {
-      window.open(url, '_blank', 'noopener');
-    });
-
-    // 内嵌加载
-    embedBtn.addEventListener('click', () => {
-      if (!frame.src) {
-        frame.src = url;
-        loading.style.display = 'flex';
-        frame.addEventListener('load', () => {
-          loading.style.display = 'none';
-        }, { once: true });
-      } else {
-        // 已经加载过就滚动到 iframe 位置
-        frame.scrollIntoView({ behavior:'smooth', block:'center' });
-      }
-    });
-
-    // 发送“解锁音频”消息（需要子页安装接收器脚本才能生效）
-    unlockBtn.addEventListener('click', () => {
-      try {
-        // 如果未内嵌，先内嵌（保障拿到 contentWindow）
-        if (!frame.src) { embedBtn.click(); }
-        // 稍等一帧再 postMessage
-        setTimeout(() => {
-          if (frame.contentWindow) {
-            frame.contentWindow.postMessage('UNLOCK_AUDIO', '*');
-          }
-        }, 250);
-      } catch (e) {}
-    });
-
-    // 全屏
-    fullscreenBtn.addEventListener('click', async () => {
-      const wrap = qs('.frameWrap', card);
-      if (!frame.src) { embedBtn.click(); }
-      try {
-        if (wrap.requestFullscreen) await wrap.requestFullscreen();
-        else if (wrap.webkitRequestFullscreen) await wrap.webkitRequestFullscreen();
-      } catch(e){}
-    });
+  embedBtn.addEventListener('click', () => {
+    if (!frame.src) {
+      frame.src = url;
+      wrap.hidden = false;
+      frame.addEventListener('load', () => loading.style.display = 'none', { once:true });
+    } else {
+      wrap.scrollIntoView({ behavior:'smooth', block:'center' });
+    }
   });
 
-  // 在父页也绑定一次“首次交互”→ 触发一次解锁（为了给同域/允许接收的子页一个机会）
-  const fireBroadcast = () => {
-    const frames = qsa('iframe');
-    frames.forEach(f => {
-      try { f.contentWindow && f.contentWindow.postMessage('UNLOCK_AUDIO', '*'); } catch(e){}
-    });
-    window.removeEventListener('pointerdown', fireBroadcast);
-    window.removeEventListener('keydown', fireBroadcast);
+  const postUnlock = () => {
+    try { frame.contentWindow && frame.contentWindow.postMessage('UNLOCK_AUDIO','*'); } catch(e){}
   };
-  window.addEventListener('pointerdown', fireBroadcast);
-  window.addEventListener('keydown', fireBroadcast);
-})();
+  unlockBtn.addEventListener('click', () => { if(!frame.src) embedBtn.click(); setTimeout(postUnlock, 250); });
+
+  // 保险：用户第一次交互时也广播一次（如果已内嵌）
+  const once = () => { if (frame.src) postUnlock(); window.removeEventListener('pointerdown', once); window.removeEventListener('keydown', once); };
+  window.addEventListener('pointerdown', once);
+  window.addEventListener('keydown', once);
 </script>
 </body>
 </html>
