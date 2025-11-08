@@ -1,106 +1,160 @@
-<!doctype html>
-<html lang="zh-CN">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Patrick 中文学习 | 首页</title>
-<style>
-  :root{--bg:#0f172a;--card:#111827;--text:#e5e7eb;--muted:#9ca3af;--brand:#22c55e;--btn:#16a34a;--radius:16px}
-  *{box-sizing:border-box}
-  body{margin:0;background:linear-gradient(180deg,#0b1024,#0f172a 40%,#0b1226);font:16px/1.6 system-ui,Segoe UI,Arial,sans-serif;color:var(--text)}
-  .wrap{max-width:1100px;margin:0 auto;padding:24px}
-  .nav{display:flex;justify-content:space-between;align-items:center;padding:14px 0}
-  .nav a{color:var(--text);text-decoration:none}
-  .brand{font-weight:700;letter-spacing:.3px}
-  .pill{display:inline-flex;gap:8px;border:1px solid rgba(255,255,255,.12);padding:6px 12px;border-radius:999px;color:var(--muted)}
-  .hero{display:grid;grid-template-columns:1.15fr 1fr;gap:28px;align-items:center;padding:28px 0}
-  .hero h1{font-size:clamp(28px,4.6vw,44px);margin:0 0 10px}
-  .hero p{margin:0 0 18px;color:#cbd5e1}
-  .btns{display:flex;gap:12px;flex-wrap:wrap}
-  .btn{appearance:none;border:1px solid rgba(255,255,255,.14);background:#151a33;color:#fff;border-radius:12px;padding:12px 16px;cursor:pointer}
-  .btn.primary{background:var(--btn);border-color:transparent}
-  .card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:var(--radius);overflow:hidden}
-  .frameWrap{position:relative;width:100%;aspect-ratio:16/9}
-  iframe{position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:0}
-  .loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(10,12,26,.6);backdrop-filter:blur(6px)}
-  .spin{width:22px;height:22px;border:3px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:spin 1s linear infinite;margin-right:8px}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  .section{margin-top:38px}
-  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
-  .tile{padding:16px;border-radius:var(--radius);background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08)}
-  .muted{color:var(--muted)}
-  footer{margin:40px 0 10px;color:#9aa3b2;font-size:14px;text-align:center}
-  @media (max-width:860px){.hero{grid-template-columns:1fr}.frameWrap{margin-top:12px}}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Patrick Chinese ｜ Learning + Mini Games</title>
+  <meta name="description" content="Learn Chinese the fun way: play mini web games and book 1:1 lessons.">
+  <style>
+    :root{
+      --bg:#0f172a; --card:#111827; --primary:#22c55e; --accent:#38bdf8;
+      --text:#e5e7eb; --muted:#9ca3af; --radius:16px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Noto Sans","Microsoft YaHei","PingFang SC",sans-serif}
+    a{color:inherit;text-decoration:none}
+    .container{max-width:1100px;margin:0 auto;padding:24px}
+    nav{position:sticky;top:0;backdrop-filter:blur(10px);background:rgba(10,14,25,.6);border-bottom:1px solid #1f2937;z-index:5}
+    .nav-inner{display:flex;gap:14px;align-items:center;justify-content:space-between;padding:12px 0}
+    .nav-links{display:flex;gap:12px;flex-wrap:wrap}
+    .pill{padding:8px 12px;border-radius:999px;border:1px solid #1f2937;background:#0b1220}
+    .pill:hover{border-color:#334155}
+    header{padding:48px 0 24px}
+    .hero{display:grid;gap:18px;padding:36px;border-radius:16px;background:linear-gradient(135deg,#0b1220 0%,#121a2e 100%);box-shadow:0 8px 24px rgba(0,0,0,.25)}
+    .hero h1{font-size:40px;line-height:1.2;margin:0}
+    .hero p{margin:4px 0 8px;color:var(--muted)}
+    .btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
+    .btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 18px;border-radius:12px;background:#22c55e;color:#062810;font-weight:700;transition:.2s;border:2px solid transparent}
+    .btn.secondary{background:#172554;color:#c7d2fe;border-color:#1e3a8a}
+    .btn:hover{transform:translateY(-1px);filter:brightness(1.05)}
+    section{margin:40px 0}
+    h2{font-size:28px;margin:0 0 12px}
+    .muted{color:var(--muted)}
+    .grid{display:grid;gap:16px;grid-template-columns:repeat(12,1fr)}
+    .card{grid-column:span 12;background:var(--card);border:1px solid #1f2937;border-radius:16px;padding:18px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+    .card h3{margin:0 0 6px;font-size:18px}
+    .card p{margin:0 0 10px;color:var(--muted)}
+    .card .actions{display:flex;gap:10px;flex-wrap:wrap}
+    .tag{display:inline-block;padding:4px 8px;border-radius:999px;background:#0b5;color:#021;font-weight:700;font-size:12px}
+    @media(min-width:720px){.card{grid-column:span 6}}
+    @media(min-width:1024px){.card{grid-column:span 4}}
+    .frame-wrap{position:relative;width:100%;padding-top:56.25%;border-radius:14px;overflow:hidden;border:1px solid #1f2937;background:#06080f}
+    .frame-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+    .anchor-pad{scroll-margin-top:100px}
+    footer{margin:48px 0 12px;text-align:center;color:var(--muted);font-size:14px}
+  </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="nav">
-      <div class="brand">Patrick 中文学习</div>
-      <a class="pill" href="#" onclick="alert('把你的订课链接换到这里');return false;">📅 订课链接</a>
+  <nav>
+    <div class="container nav-inner">
+      <div><strong>Patrick Chinese</strong></div>
+      <div class="nav-links">
+        <a class="pill" href="#games">Games</a>
+        <a class="pill" href="#booking">Book a Lesson</a>
+        <a class="pill" href="#contact">Contact</a>
+      </div>
     </div>
+  </nav>
 
-    <section class="hero">
-      <div>
-        <div class="pill" style="margin-bottom:10px">🎮 学习 + 小游戏</div>
-        <h1>有趣、轻量、可直接在网页里玩的中文小游戏</h1>
-        <p>点“开始游戏”新开标签玩；或点“页面内试玩”在下方嵌入。首次点击也会顺便启用音效。</p>
-        <div class="btns">
-          <a class="btn primary" target="_blank" rel="noopener"
-            href="https://shipeng57124.github.io/mandarin-lab/shooting_characters_web.tonal_game.10.28.html">开始游戏（新标签）</a>
-          <button class="btn" id="embedBtn">页面内试玩</button>
-          <button class="btn" id="unlockBtn">如果没声音，点这里启用音效</button>
-        </div>
+  <header class="container">
+    <div class="hero">
+      <h1>Chinese doesn’t have to be boring.</h1>
+      <p>Play and learn. Start a game or book a trial lesson today. 😎</p>
+      <div class="btns">
+        <a class="btn" href="#games">👉 Start Playing</a>
+        <a class="btn secondary" href="#booking">📅 Book a Lesson</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section id="games" class="anchor-pad">
+      <h2>Mini Chinese Games</h2>
+      <p class="muted">Grow your vocab, pinyin skills, and reaction time—while having fun.</p>
+      <div class="grid" style="margin-top:16px;">
+        <!-- Game Card 1: your real game -->
+        <article class="card">
+          <span class="tag">Featured</span>
+          <h3>Typing Adventure (HSK)</h3>
+          <p>Type pinyin, dodge obstacles, and get your score.</p>
+          <div class="actions">
+            <a class="btn" href="https://shipeng57124.github.io/mandarin-lab/shooting_characters_web.tonal_game.10.28.html" target="_blank" rel="noopener">▶️ Open in New Tab</a>
+            <a class="btn secondary" href="#inline-game">or Try Inline</a>
+          </div>
+        </article>
+
+        <!-- Placeholder cards: replace later if needed -->
+        <article class="card">
+          <h3>Pinyin Shooter (Demo)</h3>
+          <p>Listen and shoot the matching character.</p>
+          <div class="actions">
+            <a class="btn" href="#" onclick="alert('Add your second game link here later');return false;">▶️ Open in New Tab</a>
+          </div>
+        </article>
+        <article class="card">
+          <h3>Vocab Memory (Demo)</h3>
+          <p>Match words and meanings for solid recall.</p>
+          <div class="actions">
+            <a class="btn" href="#" onclick="alert('Add your third game link here later');return false;">▶️ Open in New Tab</a>
+          </div>
+        </article>
       </div>
 
-      <div class="card">
-        <div class="frameWrap" id="frameWrap" hidden>
-          <div class="loading" id="loading"><div class="spin"></div>加载中…</div>
-          <iframe id="gameFrame" allow="gamepad *; fullscreen" loading="lazy" referrerpolicy="no-referrer"></iframe>
+      <!-- Inline play -->
+      <div id="inline-game" style="margin-top:18px;">
+        <div class="frame-wrap">
+          <iframe id="gameFrame" src="about:blank" allow="autoplay; gamepad *; fullscreen" title="Typing Adventure (Inline)"></iframe>
         </div>
+        <p style="text-align:center;color:#9ca3af;margin-top:8px;">
+          Having trouble loading inline? <a href="https://shipeng57124.github.io/mandarin-lab/shooting_characters_web.tonal_game.10.28.html" target="_blank" rel="noopener">Open full screen</a>.
+        </p>
       </div>
     </section>
 
-    <section class="section">
-      <h3 style="margin:0 0 10px">说明</h3>
-      <div class="grid">
-        <div class="tile"><b>首页美观</b><div class="muted">保持之前的清爽风格，按钮明显、对比强，移动端也好看。</div></div>
-        <div class="tile"><b>两种玩法</b><div class="muted">新标签打开最稳；页面内试玩方便课堂演示。</div></div>
-        <div class="tile"><b>音效提示</b><div class="muted">若无声：先点击页面任意处或“启用音效”，再开始游戏。</div></div>
+    <section id="booking" class="anchor-pad">
+      <h2>Level up faster—together.</h2>
+      <p class="muted">1:1 speaking practice, kids’ Chinese, and solid foundations. Start with a friendly trial lesson.</p>
+      <div class="btns">
+        <a class="btn" href="#" onclick="alert('Replace with your booking link');return false;">👉 Book Now</a>
       </div>
     </section>
 
-    <footer>© 2025 Patrick · Mandarin Lab</footer>
-  </div>
+    <section id="contact" class="anchor-pad">
+      <h2>Contact</h2>
+      <div class="grid" style="margin-top:12px;">
+        <div class="card">
+          <h3>How to reach me</h3>
+          <p class="muted">Replace with your actual info:</p>
+          <p>📧 Email: <a href="mailto:yourname@email.com">yourname@email.com</a>
+          <br/>▶️ YouTube: <a href="https://youtube.com/@yourchannel" target="_blank" rel="noopener">@yourchannel</a>
+          <br/>💬 WeChat: Add me and say “Chinese learner”.</p>
+        </div>
+      </div>
+    </section>
+  </main>
 
-<script>
-  // 父页：内嵌 + 发送“启用音效”消息给子页
-  const url = "https://shipeng57124.github.io/mandarin-lab/shooting_characters_web.tonal_game.10.28.html";
-  const wrap = document.getElementById('frameWrap');
-  const frame = document.getElementById('gameFrame');
-  const loading = document.getElementById('loading');
-  const embedBtn = document.getElementById('embedBtn');
-  const unlockBtn = document.getElementById('unlockBtn');
+  <footer>
+    <div class="container" style="text-align:center;color:#9ca3af;">
+      A light, fun, and effective way to learn Chinese. 🤗 © <script>document.write(new Date().getFullYear())</script> Patrick
+    </div>
+  </footer>
 
-  embedBtn.addEventListener('click', () => {
-    if (!frame.src) {
-      frame.src = url;
-      wrap.hidden = false;
-      frame.addEventListener('load', () => loading.style.display = 'none', { once:true });
-    } else {
-      wrap.scrollIntoView({ behavior:'smooth', block:'center' });
-    }
-  });
+  <!-- Tiny helper: load inline game + send audio-unlock signal on first interaction -->
+  <script>
+    const INLINE_URL = "https://shipeng57124.github.io/mandarin-lab/shooting_characters_web.tonal_game.10.28.html";
+    const frame = document.getElementById('gameFrame');
 
-  const postUnlock = () => {
-    try { frame.contentWindow && frame.contentWindow.postMessage('UNLOCK_AUDIO','*'); } catch(e){}
-  };
-  unlockBtn.addEventListener('click', () => { if(!frame.src) embedBtn.click(); setTimeout(postUnlock, 250); });
+    // When user clicks "Try Inline" card link, load the iframe
+    document.querySelector('a[href="#inline-game"]').addEventListener('click', (e)=>{
+      // allow default hash jump, then load game
+      setTimeout(()=>{ if(frame && !frame.src) frame.src = INLINE_URL; }, 0);
+    });
 
-  // 保险：用户第一次交互时也广播一次（如果已内嵌）
-  const once = () => { if (frame.src) postUnlock(); window.removeEventListener('pointerdown', once); window.removeEventListener('keydown', once); };
-  window.addEventListener('pointerdown', once);
-  window.addEventListener('keydown', once);
-</script>
+    // Broadcast a simple unlock message to the game page (if it listens)
+    function postUnlock(){ try{ frame.contentWindow && frame.contentWindow.postMessage('UNLOCK_AUDIO','*'); }catch(e){} }
+    function firstGesture(){ postUnlock(); window.removeEventListener('pointerdown', firstGesture); window.removeEventListener('keydown', firstGesture); }
+    window.addEventListener('pointerdown', firstGesture);
+    window.addEventListener('keydown',  firstGesture);
+  </script>
 </body>
 </html>
