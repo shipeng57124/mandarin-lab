@@ -3,154 +3,233 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Mandarin Lab ｜ Learn + Play Chinese</title>
-  <meta name="description" content="Mandarin Lab — Learn Chinese the fun way: play mini web games and book 1:1 lessons.">
+  <title>Mandarin Lab · Learn Chinese the fun way</title>
+  <meta name="description" content="Play mini Chinese games and book a friendly 1:1 lesson." />
+  <link rel="icon" href="favicon.ico" />
+
   <style>
-    :root{--bg:#0f172a;--card:#111827;--text:#e5e7eb;--muted:#9ca3af;--brand:#22c55e;--radius:16px}
+    :root{
+      /* 日间（默认） */
+      --bg: #ffffff;
+      --card: #ffffff;
+      --text: #0b1324;
+      --muted: #57607a;
+      --brand: #1463ff;
+      --brand-2: #0d49bf;
+      --border: #e9edf3;
+      --shadow: 0 6px 24px rgba(17,24,39,.08);
+      --chip: #eef4ff;
+    }
+    :root[data-theme="dark"]{
+      --bg: #0f172a;
+      --card: #121a31;
+      --text: #f5f7ff;
+      --muted: #97a3b6;
+      --brand: #6ca9ff;
+      --brand-2: #4a86e6;
+      --border: #22304c;
+      --shadow: 0 6px 24px rgba(0,0,0,.35);
+      --chip: #1c2a4d;
+    }
     *{box-sizing:border-box}
-    html,body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,Segoe UI,Arial,"Noto Sans","Microsoft YaHei","PingFang SC",sans-serif}
+    html,body{margin:0;height:100%}
+    body{
+      background:var(--bg);
+      color:var(--text);
+      font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif;
+    }
     a{color:inherit;text-decoration:none}
-    .wrap{max-width:1100px;margin:0 auto;padding:24px}
-    .nav{position:sticky;top:0;backdrop-filter:blur(8px);background:rgba(8,12,24,.6);border-bottom:1px solid #1f2937;z-index:5}
-    .nav-in{display:flex;justify-content:space-between;align-items:center;padding:12px 0}
-    .pill{display:inline-flex;gap:8px;border:1px solid #1f2937;padding:8px 12px;border-radius:999px;background:#0b1220}
-    header{padding:42px 0 22px}
-    .hero{display:grid;gap:16px;padding:28px;border-radius:var(--radius);background:linear-gradient(135deg,#0b1220 0%,#121a2e 100%);box-shadow:0 8px 24px rgba(0,0,0,.25)}
-    .hero h1{font-size:clamp(28px,4.2vw,40px);margin:0}
-    .hero p{margin:6px 0 10px;color:#cbd5e1}
-    .btns{display:flex;gap:12px;flex-wrap:wrap}
-    .btn{appearance:none;border:2px solid transparent;background:var(--brand);color:#052b14;font-weight:700;border-radius:12px;padding:12px 16px;cursor:pointer}
-    .btn.secondary{background:#172554;color:#c7d2fe;border-color:#1e3a8a}
-    section{margin:36px 0}
-    h2{font-size:26px;margin:0 0 8px}
-    .muted{color:var(--muted)}
-    .grid{display:grid;gap:16px;grid-template-columns:repeat(12,1fr)}
-    .card{grid-column:span 12;background:var(--card);border:1px solid #1f2937;border-radius:var(--radius);padding:18px}
-    @media(min-width:720px){.card{grid-column:span 6}}
-    @media(min-width:1024px){.card{grid-column:span 4}}
-    .card h3{margin:0 0 6px;font-size:18px}
-    .card p{margin:0 0 12px;color:var(--muted)}
-    .tag{display:inline-block;padding:4px 8px;border-radius:999px;background:#0b5;color:#021;font-weight:700;font-size:12px;margin-bottom:8px}
-    .actions{display:flex;gap:10px;flex-wrap:wrap}
-    .frame{position:relative;width:100%;padding-top:56.25%;border-radius:12px;overflow:hidden;border:1px solid #1f2937;background:#06080f}
-    iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-    .anchor{scroll-margin-top:100px}
-    footer{margin:40px 0 10px;color:#9aa3b2;font-size:14px;text-align:center}
+    .container{max-width:1100px;margin:0 auto;padding:28px 20px 80px}
+
+    /* 顶部导航 */
+    .nav{
+      display:flex;align-items:center;justify-content:space-between;
+      gap:16px;padding:10px 0 18px;border-bottom:1px solid var(--border);
+    }
+    .brand{font-weight:800;letter-spacing:.2px}
+    .nav-actions{display:flex;gap:10px;align-items:center}
+    .btn{
+      appearance:none;border:1px solid var(--border);background:#fff;color:#111;
+      padding:10px 14px;border-radius:12px;font-weight:600;cursor:pointer;
+      transition:.15s;box-shadow:var(--shadow)
+    }
+    :root[data-theme="dark"] .btn{background:#0f172a;color:var(--text)}
+    .btn:hover{transform:translateY(-1px)}
+    .btn-primary{
+      background:var(--brand);color:#fff;border-color:transparent;
+    }
+    .btn-primary:hover{background:var(--brand-2)}
+    .chip{
+      display:inline-flex;align-items:center;gap:8px;
+      background:var(--chip);color:var(--brand);padding:6px 10px;border-radius:999px;
+      font-weight:700;font-size:12px
+    }
+
+    /* 英雄区 */
+    .hero{padding:36px 0 22px}
+    .hero h1{
+      margin:0 0 12px;font-size:clamp(28px,5vw,44px);line-height:1.15;font-weight:900;
+      letter-spacing:.3px
+    }
+    .hero p{margin:0 0 18px;color:var(--muted)}
+    .hero-actions{display:flex;gap:12px;flex-wrap:wrap}
+
+    /* 卡片网格 */
+    .grid{display:grid;gap:18px;margin-top:26px}
+    @media (min-width:840px){.grid{grid-template-columns:repeat(3,1fr)}}
+    .card{
+      background:var(--card);border:1px solid var(--border);border-radius:18px;
+      padding:18px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:12px;
+      min-height:220px;
+    }
+    .card h3{margin:0;font-size:18px}
+    .card p{margin:0;color:var(--muted)}
+    .card .badge{align-self:flex-start}
+
+    .card-actions{margin-top:auto;display:flex;gap:10px;flex-wrap:wrap}
+    .btn-ghost{background:transparent;border-color:var(--border)}
+
+    /* 页脚 */
+    footer{margin-top:28px;padding-top:22px;border-top:1px solid var(--border);color:var(--muted);font-size:14px}
+
+    /* 弹窗 iframe */
+    .modal{
+      position:fixed;inset:0;background:rgba(0,0,0,.6);
+      display:none;align-items:center;justify-content:center;padding:24px;z-index:9999;
+    }
+    .modal.open{display:flex}
+    .modal-card{background:#0000;padding:0;border-radius:16px;max-width:1200px;width:100%;height:80vh;position:relative}
+    .modal iframe{
+      position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:16px;background:#000;
+    }
+    .modal .close{
+      position:absolute;top:-42px;right:0;background:#fff;color:#111;border:none;border-radius:10px;
+      padding:8px 12px;cursor:pointer;box-shadow:var(--shadow);font-weight:700
+    }
+    :root[data-theme="dark"] .modal .close{background:#0f172a;color:var(--text)}
   </style>
 </head>
 <body>
-  <div class="nav">
-    <div class="wrap nav-in">
-      <strong>Mandarin Lab</strong>
-      <div class="links">
-        <a class="pill" href="#games">Games</a>
-        <a class="pill" href="#booking">Book a Lesson</a>
-        <a class="pill" href="#contact">Contact</a>
+  <div class="container">
+    <!-- 顶部导航 -->
+    <nav class="nav">
+      <div class="brand">Mandarin Lab</div>
+      <div class="nav-actions">
+        <a class="btn btn-ghost" href="#games">Games</a>
+        <a class="btn" href="BOOKING_LINK_HERE" target="_blank" rel="noopener">Book a Lesson</a>
+        <button id="themeToggle" class="btn">🌞 Light</button>
       </div>
+    </nav>
+
+    <!-- 英雄区 -->
+    <section class="hero">
+      <span class="chip">Learn Chinese the fun way</span>
+      <h1>Play a mini game or book a friendly 1:1 lesson.</h1>
+      <p>快速进入小游戏练词汇、拼音与反应能力；或者预约一节轻松有趣的中文课。</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#games">Start Playing</a>
+        <a class="btn" href="BOOKING_LINK_HERE" target="_blank" rel="noopener">Book a Lesson</a>
+      </div>
+    </section>
+
+    <!-- 游戏列表 -->
+    <h2 id="games" style="margin:18px 0 6px">Mini Chinese Games</h2>
+    <div class="grid">
+      <!-- 游戏1：听音射字（已有页） -->
+      <article class="card">
+        <span class="badge chip">Recommended</span>
+        <h3>Shooting Characters (HSK)</h3>
+        <p>Listen to the audio, shoot the correct Chinese character, and earn your score.</p>
+        <div class="card-actions">
+          <a class="btn btn-primary" target="_blank" rel="noopener"
+             href="/mandarin-lab/shooting_characters_web.tonal_game.10.28.html">Open in New Tab</a>
+          <button class="btn btn-ghost" data-inline="/mandarin-lab/shooting_characters_web.tonal_game.10.28.html">Try Inline</button>
+        </div>
+      </article>
+
+      <!-- 游戏2：Solitaire Demo（文件夹 /solitaire/） -->
+      <article class="card">
+        <span class="badge chip">New</span>
+        <h3>Solitaire Demo</h3>
+        <p>A simple demo game page to test static hosting and routing under GitHub Pages.</p>
+        <div class="card-actions">
+          <a class="btn btn-primary" target="_blank" rel="noopener"
+             href="/mandarin-lab/solitaire/">Open in New Tab</a>
+          <button class="btn btn-ghost" data-inline="/mandarin-lab/solitaire/">Try Inline</button>
+        </div>
+      </article>
+
+      <!-- 预留位：下个游戏（占位） -->
+      <article class="card">
+        <span class="badge chip">Coming Soon</span>
+        <h3>Vocab Memory</h3>
+        <p>Match words and meanings for solid recall. (WIP)</p>
+        <div class="card-actions">
+          <button class="btn" disabled>Building…</button>
+        </div>
+      </article>
+    </div>
+
+    <!-- 页脚 -->
+    <footer>
+      <div>© <span id="y"></span> Mandarin Lab · Contact: <a href="mailto:your@email.com">your@email.com</a></div>
+    </footer>
+  </div>
+
+  <!-- 弹窗：内嵌试玩 -->
+  <div id="modal" class="modal" aria-hidden="true">
+    <div class="modal-card">
+      <button class="close" id="closeModal">Close ✕</button>
+      <iframe id="playFrame" src="" title="Inline Game"></iframe>
     </div>
   </div>
 
-  <header class="wrap">
-    <div class="hero">
-      <h1>Learn Chinese the fun way.</h1>
-      <p>Play a mini game or book a friendly 1:1 lesson today.</p>
-      <div class="btns">
-        <a class="btn" href="#games">▶ Start Playing</a>
-        <a class="btn secondary" href="#booking">📅 Book a Lesson</a>
-      </div>
-    </div>
-  </header>
-
-  <main class="wrap">
-    <section id="games" class="anchor">
-      <h2>Mini Chinese Games</h2>
-      <p class="muted">Grow your vocab, pinyin skills, and reaction time—while having fun.</p>
-
-      <div class="grid" style="margin-top:14px;">
-        <!-- Game 1: real game -->
-        <article class="card">
-          <span class="tag">Recommneded</span>
-          <h3>Shooting Chracters (HSK)</h3>
-          <p>listen to the audio, shoot characters, and earn your score.</p>
-          <div class="actions">
-            <a class="btn" target="_blank" rel="noopener"
-               href="https://shipeng57124.github.io/mandarin-lab/shooting_characters_web.tonal_game.10.28.html">Open in New Tab</a>
-            <a class="btn secondary" href="#inline">or Try Inline</a>
-          </div>
-        </article>
-
-        <!-- Game 2: coming soon -->
-        <article class="card">
-          <span class="tag" style="background:#4b5563;color:#e5e7eb;">Coming Soon</span>
-          <h3>Pinyin Shooter</h3>
-          <p>Listen and shoot the matching character.</p>
-          <div class="actions">
-            <button class="btn secondary" disabled>Open in New Tab</button>
-          </div>
-        </article>
-
-        <!-- Game 3: coming soon -->
-        <article class="card">
-          <span class="tag" style="background:#4b5563;color:#e5e7eb;">Coming Soon</span>
-          <h3>Vocab Memory</h3>
-          <p>Match words and meanings for solid recall.</p>
-          <div class="actions">
-            <button class="btn secondary" disabled>Open in New Tab</button>
-          </div>
-        </article>
-      </div>
-
-      <!-- Inline play area -->
-      <div id="inline" style="margin-top:16px;">
-        <div class="frame">
-          <iframe id="gameFrame" src="about:blank"
-                  allow="autoplay; gamepad *; fullscreen"
-                  title="Typing Adventure (Inline)"></iframe>
-        </div>
-        <p style="text-align:center;color:#9ca3af;margin-top:8px;">
-          Trouble loading inline? <a target="_blank" rel="noopener"
-          href="https://shipeng57124.github.io/mandarin-lab/shooting_characters_web.tonal_game.10.28.html">Open the full game</a>.
-        </p>
-      </div>
-    </section>
-
-    <section id="booking" class="anchor">
-      <h2>Level up faster—together.</h2>
-      <p class="muted">1:1 speaking practice, kids’ Chinese, and solid foundations. Start with a friendly trial lesson.</p>
-      <div class="btns">
-        <a class="btn" href="#" onclick="alert('Replace with your booking link');return false;">Book Now</a>
-      </div>
-    </section>
-
-    <section id="contact" class="anchor">
-      <h2>Contact</h2>
-      <div class="grid" style="margin-top:12px;">
-        <article class="card" style="grid-column:span 12;">
-          <h3>How to reach me</h3>
-          <p class="muted">Replace with your actual info:</p>
-          <p>📧 Email: <a href="mailto:your@email.com">your@email.com</a><br/>
-             ▶️ YouTube: <a href="https://youtube.com/@yourchannel" target="_blank" rel="noopener">@yourchannel</a><br/>
-             💬 WeChat: Add me and say “Chinese learner”.</p>
-        </article>
-      </div>
-    </section>
-  </main>
-
-  <footer>© <script>document.write(new Date().getFullYear())</script> Mandarin Lab · Learn + Play Chinese</footer>
-
-  <!-- Inline loader + simple audio-unlock broadcast -->
   <script>
-    const INLINE_URL = "https://shipeng57124.github.io/mandarin-lab/shooting_characters_web.tonal_game.10.28.html";
-    const frame = document.getElementById('gameFrame');
-    // load when clicking "Try Inline"
-    document.querySelector('a[href="#inline"]').addEventListener('click', ()=>{
-      setTimeout(()=>{ if(frame && !frame.src) frame.src = INLINE_URL; }, 0);
+    // 年份
+    document.getElementById('y').textContent = new Date().getFullYear();
+
+    // 主题：默认日间（light）
+    const root = document.documentElement;
+    const key = 'mlab-theme';
+    const saved = localStorage.getItem(key);
+    if(!saved){ root.setAttribute('data-theme','light'); }
+    else{ root.setAttribute('data-theme', saved); }
+    const toggleBtn = document.getElementById('themeToggle');
+    function syncLabel(){
+      const t = root.getAttribute('data-theme') || 'light';
+      toggleBtn.textContent = t === 'dark' ? '🌙 Dark' : '🌞 Light';
+    }
+    syncLabel();
+    toggleBtn.addEventListener('click', ()=>{
+      const next = (root.getAttribute('data-theme') === 'dark') ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      localStorage.setItem(key, next);
+      syncLabel();
     });
-    // try to unlock audio in child (if it listens)
-    function postUnlock(){ try{ frame.contentWindow && frame.contentWindow.postMessage('UNLOCK_AUDIO','*'); }catch(e){} }
-    function firstGesture(){ if(frame.src) postUnlock(); window.removeEventListener('pointerdown', firstGesture); window.removeEventListener('keydown', firstGesture); }
-    window.addEventListener('pointerdown', firstGesture);
-    window.addEventListener('keydown',  firstGesture);
+
+    // 内嵌试玩（iframe 弹窗）
+    const modal = document.getElementById('modal');
+    const frame = document.getElementById('playFrame');
+    document.querySelectorAll('[data-inline]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const url = btn.getAttribute('data-inline');
+        frame.src = url;
+        modal.classList.add('open');
+        modal.setAttribute('aria-hidden','false');
+      });
+    });
+    document.getElementById('closeModal').addEventListener('click', ()=>{
+      frame.src = '';
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden','true');
+    });
+    modal.addEventListener('click', (e)=>{
+      if(e.target === modal){
+        frame.src = '';
+        modal.classList.remove('open');
+        modal.setAttribute('aria-hidden','true');
+      }
+    });
   </script>
 </body>
 </html>
