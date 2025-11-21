@@ -62,58 +62,68 @@
   </header>
 
   <main class="wrap">
+    <!-- GAMES -->
     <section id="games" class="anchor">
       <h2>Mini Chinese Games</h2>
       <p class="muted">Grow your vocab, pinyin skills, and reaction time—while having fun.</p>
 
       <div class="grid" style="margin-top:14px;">
-        <!-- Game 1: real game -->
+        <!-- Game 1: Shooting Characters -->
         <article class="card">
-          <span class="tag">Recommneded</span>
-          <h3>Shooting Chracters (HSK)</h3>
-          <p>listen to the audio, shoot characters, and earn your score.</p>
+          <span class="tag">Recommended</span>
+          <h3>Shooting Characters (HSK)</h3>
+          <p>Listen to the audio, shoot the correct characters, and earn your score.</p>
           <div class="actions">
             <a class="btn" target="_blank" rel="noopener"
-               href="https://shipeng57124.github.io/mandarin-lab/shooting_characters_web.tonal_game.10.28.html">Open in New Tab</a>
-            <a class="btn secondary" href="#inline">or Try Inline</a>
+               href="https://shipeng57124.github.io/mandarin-lab/shooting_characters_web.tonal_game.10.28.html">
+              Open in New Tab
+            </a>
+            <a class="btn secondary" href="#shooting-inline">Try Inline</a>
           </div>
         </article>
 
-        <!-- Game 2: coming soon -->
+        <!-- Game 2: Solitaire -->
+        <article class="card">
+          <span class="tag">New</span>
+          <h3>Chinese Solitaire</h3>
+          <p>A classic solitaire game with your custom Chinese deck. Best experienced in full screen.</p>
+          <div class="actions">
+            <a class="btn" target="_blank" rel="noopener" href="solitaire/index.html">
+              Open in New Tab
+            </a>
+            <!-- 以后如果想做内嵌版，可以再加一个按钮 + iframe -->
+          </div>
+        </article>
+
+        <!-- Placeholders for future games -->
         <article class="card">
           <span class="tag" style="background:#4b5563;color:#e5e7eb;">Coming Soon</span>
           <h3>Pinyin Shooter</h3>
-          <p>Listen and shoot the matching character.</p>
+          <p>Listen and shoot the matching syllable.</p>
           <div class="actions">
-            <button class="btn secondary" disabled>Open in New Tab</button>
-          </div>
-        </article>
-
-        <!-- Game 3: coming soon -->
-        <article class="card">
-          <span class="tag" style="background:#4b5563;color:#e5e7eb;">Coming Soon</span>
-          <h3>Vocab Memory</h3>
-          <p>Match words and meanings for solid recall.</p>
-          <div class="actions">
-            <button class="btn secondary" disabled>Open in New Tab</button>
+            <button class="btn secondary" disabled>Coming Soon</button>
           </div>
         </article>
       </div>
 
-      <!-- Inline play area -->
-      <div id="inline" style="margin-top:16px;">
+      <!-- Inline play area for Shooting Characters -->
+      <div id="shooting-inline" style="margin-top:16px;">
         <div class="frame">
-          <iframe id="gameFrame" src="about:blank"
+          <iframe id="shootingFrame" src="about:blank"
                   allow="autoplay; gamepad *; fullscreen"
-                  title="Typing Adventure (Inline)"></iframe>
+                  title="Shooting Characters (Inline)"></iframe>
         </div>
         <p style="text-align:center;color:#9ca3af;margin-top:8px;">
-          Trouble loading inline? <a target="_blank" rel="noopener"
-          href="https://shipeng57124.github.io/mandarin-lab/shooting_characters_web.tonal_game.10.28.html">Open the full game</a>.
+          Trouble loading inline?
+          <a target="_blank" rel="noopener"
+             href="https://shipeng57124.github.io/mandarin-lab/shooting_characters_web.tonal_game.10.28.html">
+            Open the full game
+          </a>.
         </p>
       </div>
     </section>
 
+    <!-- BOOKING -->
     <section id="booking" class="anchor">
       <h2>Level up faster—together.</h2>
       <p class="muted">1:1 speaking practice, kids’ Chinese, and solid foundations. Start with a friendly trial lesson.</p>
@@ -122,35 +132,55 @@
       </div>
     </section>
 
+    <!-- CONTACT -->
     <section id="contact" class="anchor">
       <h2>Contact</h2>
       <div class="grid" style="margin-top:12px;">
         <article class="card" style="grid-column:span 12;">
           <h3>How to reach me</h3>
           <p class="muted">Replace with your actual info:</p>
-          <p>📧 Email: <a href="mailto:your@email.com">your@email.com</a><br/>
-             ▶️ YouTube: <a href="https://youtube.com/@yourchannel" target="_blank" rel="noopener">@yourchannel</a><br/>
-             💬 WeChat: Add me and say “Chinese learner”.</p>
+          <p>
+            📧 Email: <a href="mailto:your@email.com">your@email.com</a><br/>
+            ▶️ YouTube: <a href="https://youtube.com/@yourchannel" target="_blank" rel="noopener">@yourchannel</a><br/>
+            💬 WeChat: Add me and say “Chinese learner”.
+          </p>
         </article>
       </div>
     </section>
   </main>
 
-  <footer>© <script>document.write(new Date().getFullYear())</script> Mandarin Lab · Learn + Play Chinese</footer>
+  <footer>
+    © <script>document.write(new Date().getFullYear())</script> Mandarin Lab · Learn + Play Chinese
+  </footer>
 
-  <!-- Inline loader + simple audio-unlock broadcast -->
+  <!-- Inline loader + simple audio-unlock broadcast for Shooting Characters -->
   <script>
-    const INLINE_URL = "https://shipeng57124.github.io/mandarin-lab/shooting_characters_web.tonal_game.10.28.html";
-    const frame = document.getElementById('gameFrame');
+    const SHOOTING_URL =
+      "https://shipeng57124.github.io/mandarin-lab/shooting_characters_web.tonal_game.10.28.html";
+    const shootingFrame = document.getElementById('shootingFrame');
+
     // load when clicking "Try Inline"
-    document.querySelector('a[href="#inline"]').addEventListener('click', ()=>{
-      setTimeout(()=>{ if(frame && !frame.src) frame.src = INLINE_URL; }, 0);
+    document.querySelector('a[href="#shooting-inline"]').addEventListener('click', () => {
+      setTimeout(() => {
+        if (shootingFrame && !shootingFrame.src) shootingFrame.src = SHOOTING_URL;
+      }, 0);
     });
+
     // try to unlock audio in child (if it listens)
-    function postUnlock(){ try{ frame.contentWindow && frame.contentWindow.postMessage('UNLOCK_AUDIO','*'); }catch(e){} }
-    function firstGesture(){ if(frame.src) postUnlock(); window.removeEventListener('pointerdown', firstGesture); window.removeEventListener('keydown', firstGesture); }
+    function postUnlock() {
+      try {
+        shootingFrame.contentWindow && shootingFrame.contentWindow.postMessage('UNLOCK_AUDIO', '*');
+      } catch (e) {}
+    }
+
+    function firstGesture() {
+      if (shootingFrame.src) postUnlock();
+      window.removeEventListener('pointerdown', firstGesture);
+      window.removeEventListener('keydown', firstGesture);
+    }
+
     window.addEventListener('pointerdown', firstGesture);
-    window.addEventListener('keydown',  firstGesture);
+    window.addEventListener('keydown', firstGesture);
   </script>
 </body>
 </html>
