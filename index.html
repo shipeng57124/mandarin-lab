@@ -25,13 +25,55 @@
     h2{font-size:26px;margin:0 0 8px}
     .muted{color:var(--muted)}
     .grid{display:grid;gap:16px;grid-template-columns:repeat(12,1fr)}
-    .card{grid-column:span 12;background:var(--card);border:1px solid #1f2937;border-radius:var(--radius);padding:18px}
+
+    /* 卡片 + 缩略图布局 */
+    .card{
+      grid-column:span 12;
+      background:var(--card);
+      border:1px solid #1f2937;
+      border-radius:var(--radius);
+      padding:16px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
     @media(min-width:720px){.card{grid-column:span 6}}
     @media(min-width:1024px){.card{grid-column:span 4}}
-    .card h3{margin:0 0 6px;font-size:18px}
-    .card p{margin:0 0 12px;color:var(--muted)}
-    .tag{display:inline-block;padding:4px 8px;border-radius:999px;background:#0b5;color:#021;font-weight:700;font-size:12px;margin-bottom:8px}
-    .actions{display:flex;gap:10px;flex-wrap:wrap}
+
+    .card-head{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+    .card h3{margin:0;font-size:18px}
+    .card p{margin:0 0 4px;color:var(--muted)}
+
+    .card-thumb{
+      width:100%;
+      border-radius:12px;
+      object-fit:cover;
+      aspect-ratio:16/9;
+      box-shadow:0 4px 16px rgba(0,0,0,.35);
+    }
+
+    .tag{
+      display:inline-block;
+      padding:4px 8px;
+      border-radius:999px;
+      background:#0b5;
+      color:#021;
+      font-weight:700;
+      font-size:12px;
+      align-self:flex-start;
+      margin-bottom:2px;
+    }
+    .tag.muted{
+      background:#4b5563;
+      color:#e5e7eb;
+    }
+
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
+
     .frame{position:relative;width:100%;padding-top:56.25%;border-radius:12px;overflow:hidden;border:1px solid #1f2937;background:#06080f}
     iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
     .anchor{scroll-margin-top:100px}
@@ -70,8 +112,13 @@
       <div class="grid" style="margin-top:14px;">
         <!-- Game 1: Shooting Characters -->
         <article class="card">
-          <span class="tag">Recommended</span>
-          <h3>Shooting Characters (HSK)</h3>
+          <div class="card-head">
+            <span class="tag">Recommended</span>
+            <h3>Shooting Characters (HSK)</h3>
+          </div>
+          <img src="./thumbnails/shooting.png"
+               alt="Shooting Characters game thumbnail"
+               class="card-thumb">
           <p>Listen to the audio, shoot the correct characters, and earn your score.</p>
           <div class="actions">
             <a class="btn" target="_blank" rel="noopener"
@@ -84,21 +131,30 @@
 
         <!-- Game 2: Solitaire -->
         <article class="card">
-          <span class="tag">New</span>
-          <h3>Chinese Solitaire</h3>
+          <div class="card-head">
+            <span class="tag">New</span>
+            <h3>Chinese Solitaire</h3>
+          </div>
+          <img src="./thumbnails/solitaire.png"
+               alt="Chinese Solitaire game thumbnail"
+               class="card-thumb">
           <p>A classic solitaire game with your custom Chinese deck. Best experienced in full screen.</p>
           <div class="actions">
             <a class="btn" target="_blank" rel="noopener" href="solitaire/index.html">
               Open in New Tab
             </a>
-            <!-- 以后如果想做内嵌版，可以再加一个按钮 + iframe -->
           </div>
         </article>
 
-        <!-- Placeholders for future games -->
+        <!-- Game 3: Coming soon -->
         <article class="card">
-          <span class="tag" style="background:#4b5563;color:#e5e7eb;">Coming Soon</span>
-          <h3>Pinyin Shooter</h3>
+          <div class="card-head">
+            <span class="tag muted">Coming Soon</span>
+            <h3>Pinyin Shooter</h3>
+          </div>
+          <img src="./thumbnails/pinyin.png"
+               alt="Pinyin Shooter coming soon thumbnail"
+               class="card-thumb">
           <p>Listen and shoot the matching syllable.</p>
           <div class="actions">
             <button class="btn secondary" disabled>Coming Soon</button>
@@ -137,7 +193,9 @@
       <h2>Contact</h2>
       <div class="grid" style="margin-top:12px;">
         <article class="card" style="grid-column:span 12;">
-          <h3>How to reach me</h3>
+          <div class="card-head">
+            <h3>How to reach me</h3>
+          </div>
           <p class="muted">Replace with your actual info:</p>
           <p>
             📧 Email: <a href="mailto:your@email.com">your@email.com</a><br/>
@@ -160,7 +218,7 @@
     const shootingFrame = document.getElementById('shootingFrame');
 
     // load when clicking "Try Inline"
-    document.querySelector('a[href="#shooting-inline"]').addEventListener('click', () => {
+    document.querySelector('a[href=\"#shooting-inline\"]').addEventListener('click', () => {
       setTimeout(() => {
         if (shootingFrame && !shootingFrame.src) shootingFrame.src = SHOOTING_URL;
       }, 0);
