@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Mandarin Lab ｜ Learn + Play Chinese</title>
   <meta name="description" content="Mandarin Lab — Learn Chinese the fun way: play mini web games and book 1:1 lessons.">
+
+  <!-- Calendly embed -->
+  <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
+  <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
+
   <style>
     :root{--bg:#0f172a;--card:#111827;--text:#e5e7eb;--muted:#9ca3af;--brand:#22c55e;--radius:16px}
     *{box-sizing:border-box}
@@ -78,6 +83,67 @@
     iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
     .anchor{scroll-margin-top:100px}
     footer{margin:40px 0 10px;color:#9aa3b2;font-size:14px;text-align:center}
+
+    /* Calendly 订课卡片专用样式 */
+    .booking-card{
+      grid-column:span 12 !important;
+      background:radial-gradient(circle at top left,#1f2937 0%,#020617 55%,#020617 100%);
+      border:1px solid rgba(34,197,94,0.4);
+      box-shadow:0 10px 30px rgba(0,0,0,.6);
+      position:relative;
+      overflow:hidden;
+    }
+    .booking-card::before{
+      content:"";
+      position:absolute;
+      inset:-40%;
+      background:conic-gradient(from 140deg,#22c55e33,#22c55e00,#22c55e33);
+      opacity:.35;
+      pointer-events:none;
+      mix-blend-mode:screen;
+    }
+    .booking-inner{
+      position:relative;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      z-index:1;
+    }
+    @media(min-width:720px){
+      .booking-inner{
+        flex-direction:row;
+        align-items:center;
+        justify-content:space-between;
+      }
+    }
+    .booking-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:4px 10px;
+      border-radius:999px;
+      background:rgba(15,118,110,0.9);
+      color:#ccfbf1;
+      font-size:12px;
+      margin-bottom:4px;
+    }
+    .booking-pill span{
+      font-size:14px;
+    }
+    .booking-title{
+      font-size:20px;
+      margin:0 0 4px;
+    }
+    .booking-sub{
+      margin:0;
+      color:#e5e7eb;
+      font-size:14px;
+    }
+    .booking-note{
+      margin:4px 0 0;
+      font-size:13px;
+      color:#9ca3af;
+    }
   </style>
 </head>
 <body>
@@ -109,6 +175,34 @@
       <h2>Mini Chinese Games</h2>
       <p class="muted">Grow your vocab, pinyin skills, and reaction time—while having fun.</p>
 
+      <!-- 订课卡片：放在游戏卡片上方 -->
+      <div class="grid" style="margin-top:14px;">
+        <article class="card booking-card">
+          <div class="booking-inner">
+            <div>
+              <div class="booking-pill">
+                <span>🎓</span><span>1:1 Chinese Lessons</span>
+              </div>
+              <h3 class="booking-title">Book a live lesson with Patrick</h3>
+              <p class="booking-sub">
+                预约一节 1:1 在线中文课：适合零基础、口语提升，或为孩子量身定制课程。
+              </p>
+              <p class="booking-note">
+                选择你方便的时间，Calendly 会自动帮你添加到日历并发送会议链接。
+              </p>
+            </div>
+            <div class="actions">
+              <a class="btn"
+                 href="#"
+                 onclick="Calendly.initPopupWidget({url: 'https://calendly.com/your-calendly-link'}); return false;">
+                📅 立即预约
+              </a>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <!-- 游戏卡片 -->
       <div class="grid" style="margin-top:14px;">
         <!-- Game 1: Shooting Characters -->
         <article class="card">
@@ -184,7 +278,11 @@
       <h2>Level up faster—together.</h2>
       <p class="muted">1:1 speaking practice, kids’ Chinese, and solid foundations. Start with a friendly trial lesson.</p>
       <div class="btns">
-        <a class="btn" href="#" onclick="alert('Replace with your booking link');return false;">Book Now</a>
+        <a class="btn"
+           href="#"
+           onclick="Calendly.initPopupWidget({url: 'https://calendly.com/your-calendly-link'}); return false;">
+          📅 Book via Calendly
+        </a>
       </div>
     </section>
 
