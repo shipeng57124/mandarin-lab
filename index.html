@@ -56,8 +56,9 @@
     .card-thumb{
       width:100%;
       border-radius:12px;
-      object-fit:cover;
-      aspect-ratio:16/9;
+      object-fit:contain;      /* 改成完整显示 */
+      aspect-ratio:4/3;        /* 比原来更“方”一点 */
+      background:#020617;      /* 两侧空白时的背景色 */
       box-shadow:0 4px 16px rgba(0,0,0,.35);
     }
 
@@ -79,8 +80,6 @@
 
     .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
 
-    .frame{position:relative;width:100%;padding-top:56.25%;border-radius:12px;overflow:hidden;border:1px solid #1f2937;background:#06080f}
-    iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
     .anchor{scroll-margin-top:100px}
     footer{margin:40px 0 10px;color:#9aa3b2;font-size:14px;text-align:center}
 
@@ -219,7 +218,6 @@
                href="https://shipeng57124.github.io/mandarin-lab/shooting_characters_web.tonal_game.10.28.html">
               Open in New Tab
             </a>
-            <a class="btn secondary" href="#shooting-inline">Try Inline</a>
           </div>
         </article>
 
@@ -254,22 +252,6 @@
             <button class="btn secondary" disabled>Coming Soon</button>
           </div>
         </article>
-      </div>
-
-      <!-- Inline play area for Shooting Characters -->
-      <div id="shooting-inline" style="margin-top:16px;">
-        <div class="frame">
-          <iframe id="shootingFrame" src="about:blank"
-                  allow="autoplay; gamepad *; fullscreen"
-                  title="Shooting Characters (Inline)"></iframe>
-        </div>
-        <p style="text-align:center;color:#9ca3af;margin-top:8px;">
-          Trouble loading inline?
-          <a target="_blank" rel="noopener"
-             href="https://shipeng57124.github.io/mandarin-lab/shooting_characters_web.tonal_game.10.28.html">
-            Open the full game
-          </a>.
-        </p>
       </div>
     </section>
 
@@ -308,35 +290,5 @@
   <footer>
     © <script>document.write(new Date().getFullYear())</script> Mandarin Lab · Learn + Play Chinese
   </footer>
-
-  <!-- Inline loader + simple audio-unlock broadcast for Shooting Characters -->
-  <script>
-    const SHOOTING_URL =
-      "https://shipeng57124.github.io/mandarin-lab/shooting_characters_web.tonal_game.10.28.html";
-    const shootingFrame = document.getElementById('shootingFrame');
-
-    // load when clicking "Try Inline"
-    document.querySelector('a[href=\"#shooting-inline\"]').addEventListener('click', () => {
-      setTimeout(() => {
-        if (shootingFrame && !shootingFrame.src) shootingFrame.src = SHOOTING_URL;
-      }, 0);
-    });
-
-    // try to unlock audio in child (if it listens)
-    function postUnlock() {
-      try {
-        shootingFrame.contentWindow && shootingFrame.contentWindow.postMessage('UNLOCK_AUDIO', '*');
-      } catch (e) {}
-    }
-
-    function firstGesture() {
-      if (shootingFrame.src) postUnlock();
-      window.removeEventListener('pointerdown', firstGesture);
-      window.removeEventListener('keydown', firstGesture);
-    }
-
-    window.addEventListener('pointerdown', firstGesture);
-    window.addEventListener('keydown', firstGesture);
-  </script>
 </body>
 </html>
