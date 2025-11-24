@@ -46,7 +46,7 @@
 </head>
 <body class="theme-dark">
   <div class="ui">
-    <button id="startBtn" title="开始新的一局">Start</button>
+    <button id="startBtn" title="开始新的一局">Restart</button>
     <button id="pauseBtn" title="暂停或继续当前游戏">Pause</button>
     <button id="menuBtn" title="返回模式选择并重新开始">模式菜单</button>
     <span class="badge">Score:&nbsp;<span id="score">0</span></span>
@@ -165,6 +165,2242 @@
     </div>
   </div>
 
-<script src="js/inline_shooting_characters_web_tonal_game_10_28_html_1.js"></script>
+<script>
+/* ========== 词库加载（网页版） ========== */
+let words = [];
+const DATASET_CACHE_KEY = 'wordsDataset_web_v1';
+let defaultDatasetAttempted = false;
+let currentDatasetId = 'words';
+let currentDatasetSourceName = 'words.json';
+const MODE_SHOOTING='shooting';
+const MODE_TONE='tone';
+let gameMode=MODE_SHOOTING;
+
+const THEME_STORAGE_KEY='shootingWords_theme';
+const themePalettes={
+  dark:{
+    canvasBg:'#071129',
+    wordPanel:'rgba(255,255,255,.08)',
+    pinyinText:'rgba(255,255,255,.85)',
+    wordText:'#ffffff',
+    progressEmpty:'rgba(255,255,255,.35)',
+    progressFill:'#4ef0a5',
+    previewLabel:'rgba(255,255,255,.62)',
+    crosshair:'rgba(255,255,255,.9)',
+    weaponShadow:'rgba(0,0,0,0.35)'
+  },
+  light:{
+    canvasBg:'#ffffff',
+    wordPanel:'rgba(0,0,0,.06)',
+    pinyinText:'#123b72',
+    wordText:'#0e1a2c',
+    progressEmpty:'rgba(0,0,0,.2)',
+    progressFill:'#2da66d',
+    previewLabel:'rgba(0,0,0,.65)',
+    crosshair:'rgba(0,0,0,.75)',
+    weaponShadow:'rgba(0,0,0,0.28)'
+  }
+};
+let activeTheme='dark';
+let activeThemeColors=themePalettes[activeTheme];
+
+function isToneMode(){
+  return gameMode===MODE_TONE;
+}
+
+function sanitizeDatasetId(raw=''){
+  if(!raw)return '';
+  const trimmed=String(raw).trim();
+  if(!trimmed)return '';
+  const noExt=trimmed.replace(/\.[^.]*$/,'');
+  const withoutSlashes=noExt.replace(/[\\/]+/g,'-');
+  const collapsed=withoutSlashes.replace(/[^0-9A-Za-z\u4e00-\u9fa5_-]+/g,'_');
+  const normalized=collapsed.replace(/_+/g,'_').replace(/^-+|-+$/g,'').replace(/^_+|_+$/g,'');
+  return normalized.toLowerCase();
+}
+
+function deriveDatasetId(sourceName=''){
+  if(!sourceName)return '';
+  const base=(String(sourceName).split(/[\\/]/).pop()||'').trim();
+  return sanitizeDatasetId(base);
+}
+
+function setCurrentDatasetContext({sourceName='',datasetId=''}={}){
+  if(sourceName)currentDatasetSourceName=String(sourceName).trim();
+  const derived=datasetId?sanitizeDatasetId(datasetId):deriveDatasetId(currentDatasetSourceName);
+  currentDatasetId=derived||currentDatasetId||'words';
+}
+
+function applyTheme(theme){
+  const normalized=theme==='light'?'light':'dark';
+  activeTheme=normalized;
+  activeThemeColors=themePalettes[normalized]||themePalettes.dark;
+  if(document&&document.body){
+    document.body.classList.remove('theme-dark','theme-light');
+    document.body.classList.add(`theme-${normalized}`);
+  }
+  if(typeof themeSelect!=='undefined'&&themeSelect&&themeSelect.value!==normalized){
+    themeSelect.value=normalized;
+  }
+  try{
+    localStorage.setItem(THEME_STORAGE_KEY,normalized);
+  }catch(err){
+    /* ignore persistence errors */
+  }
+}
+
+function initTheme(){
+  let stored=null;
+  try{
+    stored=localStorage.getItem(THEME_STORAGE_KEY);
+  }catch(err){
+    stored=null;
+  }
+  applyTheme(stored||activeTheme||'dark');
+}
+
+function getAudioSearchFolders(datasetId){
+  const folders=[];
+  const activeId=sanitizeDatasetId(datasetId||currentDatasetId);
+  if(activeId){
+    folders.push(`audio/${activeId}/`);
+  }
+  folders.push('audio/');
+  return folders;
+}
+
+function buildAudioSources(raw,id,datasetId){
+  const sources=[];
+  const trimmed=raw?String(raw).trim():'';
+  const candidateId=id||'';
+  const folders=getAudioSearchFolders(datasetId);
+  if(trimmed){
+    const normalized=trimmed.replace(/\\/g,'/');
+    const resolved=resolveAssetURL(normalized);
+    if(resolved)sources.push(resolved);
+    const lastSegment=normalized.split('/').pop()||'';
+    const cleanName=lastSegment.split('?')[0].split('#')[0];
+    if(cleanName){
+      folders.forEach(folder=>{
+        const candidate=`${folder}${cleanName}`.replace(/\/{2,}/g,'/');
+        const alt=resolveAssetURL(candidate);
+        if(alt)sources.push(alt);
+      });
+    }
+  }
+  if(candidateId){
+    folders.forEach(folder=>{
+      const candidate=`${folder}${candidateId}.mp3`.replace(/\/{2,}/g,'/');
+      const fallback=resolveAssetURL(candidate);
+      if(fallback)sources.push(fallback);
+    });
+  }
+  return Array.from(new Set(sources.filter(Boolean)));
+}
+
+function normalizeWords(arr,datasetId){
+  const activeDataset=sanitizeDatasetId(datasetId)||currentDatasetId;
+  const mapped = arr.map((w,i)=>{
+    const id = w.id || (w.audio ? String(w.audio).replace(/^.*\/|\.mp3$/g,'') : `w${i}`);
+    const audioSources=buildAudioSources(w.audio,id,activeDataset);
+    const rawAudio=w.audio?String(w.audio).trim():'';
+    const resolvedRaw=rawAudio?resolveAssetURL(rawAudio):'';
+    const audio=audioSources.length?audioSources[0]:(resolvedRaw||`audio/${id}.mp3`);
+    return { id, text:w.text, audio, audioSources, hint:w.hint||'', pinyin:w.pinyin };
+  });
+  const unique=[];
+  const seen=new Set();
+  mapped.forEach(item=>{
+    const key=`${item.id||''}__${item.text||''}`;
+    if(seen.has(key))return;
+    seen.add(key);
+    unique.push(item);
+  });
+  return enrichWordsWithPinyin(unique);
+}
+
+function shuffle(arr){
+  const a=arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function resetSpawnBag(){
+  spawnBag=[];
+}
+
+function drawFromSpawnBag(){
+  if(!words.length)return null;
+  if(!spawnBag.length){
+    spawnBag=shuffle(words);
+  }
+  const activeIds=new Set(floating.map(f=>f.id));
+  let pickIndex=spawnBag.findIndex(w=>!activeIds.has(w.id));
+  if(pickIndex<0){
+    pickIndex=0;
+  }
+  const [choice]=spawnBag.splice(pickIndex,1);
+  return choice||null;
+}
+
+function loadDatasetFromCache(){
+  const cached = localStorage.getItem(DATASET_CACHE_KEY);
+  if(!cached)return false;
+  try{
+    const parsed=JSON.parse(cached);
+    let datasetEntries=null;
+    let datasetId='';
+    let sourceName='';
+    if(Array.isArray(parsed)){
+      datasetEntries=parsed;
+    }else if(parsed&&typeof parsed==='object'){
+      if(Array.isArray(parsed.words)){
+        datasetEntries=parsed.words;
+      }
+      if(parsed.datasetId&&typeof parsed.datasetId==='string'){
+        datasetId=parsed.datasetId;
+      }
+      if(parsed.sourceName&&typeof parsed.sourceName==='string'){
+        sourceName=parsed.sourceName;
+      }
+    }
+    if(Array.isArray(datasetEntries)&&datasetEntries.length){
+      const sanitizedStoredId=sanitizeDatasetId(datasetId);
+      const derivedId=deriveDatasetId(sourceName);
+      const resolvedId=sanitizedStoredId||derivedId||sanitizeDatasetId(currentDatasetId)||'words';
+      const resolvedSourceName=sourceName||datasetId||currentDatasetSourceName||`${resolvedId}.json`;
+      setCurrentDatasetContext({sourceName:resolvedSourceName,datasetId:resolvedId});
+      words=normalizeWords(datasetEntries,currentDatasetId);
+      resetSpawnBag();
+      document.getElementById('importPanel').hidden = true;
+      return true;
+    }
+  }catch(err){
+    console.warn('无法解析已缓存的词库：',err);
+  }
+  return false;
+}
+
+async function fetchBundledDataset(){
+  const url=resolveAssetURL('words.json');
+  if(!url)return false;
+  let data=null;
+  let lastError=null;
+  try{
+    const res=await fetch(url,{cache:'no-store'});
+    if(res.ok){
+      data=await res.json();
+    }else{
+      lastError=new Error(`HTTP ${res.status}`);
+    }
+  }catch(err){
+    lastError=err;
+  }
+  if(!data&&(window.location.protocol==='file:'||lastError)){
+    try{
+      data=await loadJSONViaXHR(url,'words.json');
+      lastError=null;
+    }catch(xhrErr){
+      lastError=xhrErr;
+    }
+  }
+  if(data&&Array.isArray(data)&&data.length){
+    setCurrentDatasetContext({sourceName:'words.json',datasetId:'words'});
+    words=normalizeWords(data,currentDatasetId);
+    resetSpawnBag();
+    document.getElementById('importPanel').hidden = true;
+    return true;
+  }
+  if(lastError){
+    console.warn('未能加载默认词库：',lastError?.message||lastError);
+  }
+  return false;
+}
+
+async function ensureWordsAvailable(){
+  if(words.length)return true;
+  if(loadDatasetFromCache())return true;
+  if(!defaultDatasetAttempted){
+    defaultDatasetAttempted=true;
+    const ok=await fetchBundledDataset();
+    if(ok)return true;
+  }
+  return Boolean(words.length);
+}
+
+function finishDatasetImport(){
+  document.getElementById('importPanel').hidden = true;
+  setStartMenuVisible(true);
+}
+
+function loadDatasetFromText(jsonText,{persist=false,sourceName=''}={}){
+  try{
+    const data=JSON.parse(jsonText);
+    if(!Array.isArray(data)||!data.length)throw new Error('词库为空');
+    setCurrentDatasetContext({sourceName});
+    if(persist){
+      const payload={
+        words:data,
+        datasetId:currentDatasetId,
+        sourceName:currentDatasetSourceName||sourceName||''
+      };
+      localStorage.setItem(DATASET_CACHE_KEY,JSON.stringify(payload));
+    }
+    words=normalizeWords(data,currentDatasetId);
+    resetSpawnBag();
+    finishDatasetImport();
+    flash('词库已导入，请调整设置后点击 Restart 开始游戏。',1600);
+  }catch(err){
+    alert((persist?'保存失败：':'解析失败：')+err.message);
+  }
+}
+
+/* ========== 音效与游戏核心部分 ========== */
+const audioCache={}, sfx={hit:null,miss:null,wrong:null};
+let audioCtx=null;
+const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
+const startBtn=document.getElementById('startBtn'),pauseBtn=document.getElementById('pauseBtn'),
+autoReplayCk=document.getElementById('autoReplayCk'),
+scoreEl=document.getElementById('score'),comboEl=document.getElementById('combo'),
+roundEl=document.getElementById('round'),messageEl=document.getElementById('message'),
+timerEl=document.getElementById('timer'),timerSelect=document.getElementById('timerSelect'),
+speedSelect=document.getElementById('speedSelect'),pinyinToggle=document.getElementById('pinyinToggle'),
+modeSelect=document.getElementById('modeSelect'),weaponSelect=document.getElementById('weaponSelect'),
+themeSelect=document.getElementById('themeSelect'),replayBtn=document.getElementById('replayBtn'),
+toneControls=document.getElementById('toneControls'),weaponSetting=document.getElementById('weaponSetting');
+let W=canvas.width,H=canvas.height,running=false,paused=false,score=0,combo=0,round=1,
+floating=[],projectiles=[],splats=[],spawnBag=[],currentTarget=null,currentAudio=null,currentAudioSources=[],currentAudioSourceIndex=0,
+inactivityTimer=null,remainingTimeMs=0,timerHandle=null,showPinyin=false,currentWeapon='gun';
+
+initTheme();
+
+const config={
+  spawnCount:8,
+  wordSpeed:48,
+  nextDelayOnHit:250,
+  inactivityMs:3000,
+  partialHitBoost:1.25,
+  projectileForwardSpeed:1480,
+  projectileDepth:540,
+  projectileGravity:1680,
+  projectileLandingGrace:0.22,
+  projectileMinScale:0.52,
+  projectileMaxScale:0.96,
+  lobDefaultRadius:16,
+  splatDuration:1.2,
+  partialSplatDuration:0.65,
+  launcherOriginBottomPad:72,
+  launcherPreviewBottomPad:16,
+  launcherPreviewLeftPad:32,
+  launcherPreviewAreaWidth:128,
+  launcherPreviewRise:14,
+  launcherShadowWidth:34,
+  launcherShadowHeight:11,
+  crosshairBaseRadius:18,
+  crosshairBaseGap:8,
+  crosshairLineLength:28,
+  crosshairRecoilGain:10,
+  crosshairRecoilMax:22,
+  crosshairRecoilRecovery:24,
+  crosshairKickGain:18,
+  crosshairKickLateral:6,
+  crosshairKickReturn:80
+};
+
+const weaponRegistry=new Map();
+let activeWeapon=null;
+let crosshairRecoil=0;
+let crosshairKickX=0;
+let crosshairKickY=0;
+
+const toneButtonSpecs=[
+  {tone:1,symbol:'ˉ',label:'一声',keys:['1','a']},
+  {tone:2,symbol:'ˊ',label:'二声',keys:['2','s']},
+  {tone:3,symbol:'ˇ',label:'三声',keys:['3','d']},
+  {tone:4,symbol:'ˋ',label:'四声',keys:['4','f']},
+  {tone:5,symbol:'',label:'轻声',keys:['5','g']}
+];
+const toneButtonMap=new Map();
+const toneKeyMap=new Map();
+toneButtonSpecs.forEach(spec=>{
+  (spec.keys||[]).forEach(key=>{
+    if(!key)return;
+    toneKeyMap.set(String(key).toLowerCase(),spec.tone);
+  });
+});
+
+function buildToneControls(){
+  if(!toneControls)return;
+  toneControls.innerHTML='';
+  toneButtonMap.clear();
+  toneButtonSpecs.forEach(spec=>{
+    const btn=document.createElement('button');
+    btn.type='button';
+    btn.className='tone-button'+(spec.tone===5?' neutral':'');
+    btn.dataset.tone=String(spec.tone);
+    const symbol=document.createElement('span');
+    symbol.className='tone-symbol';
+    symbol.innerHTML=spec.symbol?spec.symbol:'&nbsp;';
+    const label=document.createElement('span');
+    label.className='tone-label';
+    label.textContent=spec.label;
+    btn.appendChild(symbol);
+    btn.appendChild(label);
+    btn.title=`${spec.label}（${spec.keys.join(' / ')}）`;
+    btn.addEventListener('click',()=>{
+      const toneNumber=spec.tone;
+      pulseToneButton(toneNumber);
+      handleToneInput(toneNumber);
+      resetInactivity();
+    });
+    toneControls.appendChild(btn);
+    toneButtonMap.set(spec.tone,btn);
+  });
+}
+
+function pulseToneButton(tone){
+  const btn=toneButtonMap.get(tone);
+  if(!btn)return;
+  btn.classList.add('active');
+  setTimeout(()=>btn.classList.remove('active'),120);
+}
+
+function setGameMode(mode){
+  const normalized=mode===MODE_TONE?MODE_TONE:MODE_SHOOTING;
+  if(gameMode===normalized)return;
+  gameMode=normalized;
+  if(isToneMode()){
+    activeWeapon=null;
+  }
+  updateModeUI();
+}
+
+function updateModeUI(){
+  if(isToneMode()){
+    if(toneControls)toneControls.hidden=false;
+    if(weaponSetting)weaponSetting.style.display='none';
+    if(canvas)canvas.style.cursor='default';
+  }else{
+    if(toneControls)toneControls.hidden=true;
+    if(weaponSetting)weaponSetting.style.display='';
+    if(canvas)canvas.style.cursor='crosshair';
+  }
+}
+
+buildToneControls();
+updateModeUI();
+
+function setStartMenuVisible(visible){
+  const menu=document.getElementById('startMenu');
+  if(!menu)return;
+  menu.style.display=visible?'flex':'none';
+}
+
+function abortGame({silent=false,resetScore=false}={}){
+  running=false;
+  paused=false;
+  if(pauseBtn)pauseBtn.textContent='Pause';
+  clearInterval(timerHandle);
+  timerHandle=null;
+  stopAudio();
+  if(inactivityTimer){
+    clearTimeout(inactivityTimer);
+    inactivityTimer=null;
+  }
+  floating.length=0;
+  projectiles.length=0;
+  splats.length=0;
+  currentTarget=null;
+  if(resetScore){
+    score=0;
+    combo=0;
+    round=1;
+  }
+  const selectedSeconds=timerSelect?Number(timerSelect.value||0):0;
+  remainingTimeMs=(Number.isFinite(selectedSeconds)?selectedSeconds:0)*1000;
+  updateTimerDisplay();
+  if(silent){
+    messageEl.style.opacity='0';
+  }else{
+    flash('已停止，准备重新开始',900);
+  }
+}
+
+function returnToMenu(){
+  abortGame({silent:true,resetScore:true});
+  setStartMenuVisible(true);
+  if(modeSelect&&modeSelect.value!==gameMode){
+    modeSelect.value=gameMode;
+  }
+  const importPanel=document.getElementById('importPanel');
+  if(importPanel)importPanel.hidden=true;
+  updateModeUI();
+}
+
+async function restartGame(modeOverride=null){
+  abortGame({silent:true,resetScore:true});
+  await startGame(modeOverride);
+}
+
+registerWeapon({
+  id:'gun',
+  label:'枪',
+  mode:'hitscan',
+  power:1,
+  previewScale:0.64,
+  previewBaseWidth:120,
+  previewBaseHeight:86,
+  recoil:0.35,
+  drawPreview:drawDefaultGunPreview,
+  drawProjectile:drawDefaultGunProjectile,
+  drawSplat:drawDefaultGunSplat,
+  spawnSplat:false
+});
+
+refreshWeaponSelect(false);
+setActiveWeapon(currentWeapon);
+loadWeaponManifest();
+ensureWordsAvailable().catch(err=>console.warn('默认词库加载失败：',err));
+
+const launcherOrigin={x:0,y:0};
+function syncLauncherOrigin(){
+  launcherOrigin.x=W/2;
+  const pad=(config.launcherOriginBottomPad??70);
+  launcherOrigin.y=H-pad;
+}
+syncLauncherOrigin();
+
+function registerWeapon(def){
+  if(!def)return null;
+  const id=(def.id||'').toString().trim();
+  if(!id)return null;
+  const existing=weaponRegistry.get(id)||{};
+  const mode=(def.mode||existing.mode)==='lob'?'lob':'hitscan';
+  const existingFiringSources=existing.firingSoundSources||[];
+  const existingImpactSources=existing.impactSoundSources||[];
+  const hasExplicitLaunchScale=typeof def.projectileLaunchScale==='number'||typeof def.projectileMaxScale==='number';
+  const hasExplicitLandingScale=typeof def.projectileLandingScale==='number'||typeof def.projectileMinScale==='number';
+  const spawnSplatExplicit=def.spawnSplat!==undefined;
+  const weapon={
+    id,
+    mode,
+    label:def.label||def.name||existing.label||id,
+    previewScale:typeof def.previewScale==='number'?def.previewScale:(existing.previewScale||0.8),
+    previewOffsetY:typeof def.previewOffsetY==='number'?def.previewOffsetY:(existing.previewOffsetY||0),
+    previewBaseWidth:typeof def.previewBaseWidth==='number'?def.previewBaseWidth:(existing.previewBaseWidth||140),
+    previewBaseHeight:typeof def.previewBaseHeight==='number'?def.previewBaseHeight:(existing.previewBaseHeight||110),
+    previewImageScale:typeof def.previewImageScale==='number'?def.previewImageScale:(existing.previewImageScale||1),
+    forwardSpeed:typeof def.forwardSpeed==='number'?def.forwardSpeed:(existing.forwardSpeed||config.projectileForwardSpeed),
+    gravity:typeof def.gravity==='number'?def.gravity:(existing.gravity||config.projectileGravity),
+    depth:typeof def.depth==='number'?def.depth:(existing.depth||config.projectileDepth),
+    landingGrace:typeof def.landingGrace==='number'?def.landingGrace:(existing.landingGrace??config.projectileLandingGrace),
+    projectileRadius:typeof def.projectileRadius==='number'?def.projectileRadius:(existing.projectileRadius||config.lobDefaultRadius),
+    projectileMinScale:typeof def.projectileMinScale==='number'?def.projectileMinScale:(existing.projectileMinScale||config.projectileMinScale),
+    projectileMaxScale:typeof def.projectileMaxScale==='number'?def.projectileMaxScale:(existing.projectileMaxScale||config.projectileMaxScale),
+    projectileLaunchScale:typeof def.projectileLaunchScale==='number'?def.projectileLaunchScale:(existing.projectileLaunchScale??null),
+    projectileLandingScale:typeof def.projectileLandingScale==='number'?def.projectileLandingScale:(existing.projectileLandingScale??null),
+    projectileImageScale:typeof def.projectileImageScale==='number'?def.projectileImageScale:(existing.projectileImageScale||1),
+    spinRange:typeof def.spinRange==='number'?def.spinRange:(existing.spinRange||4),
+    projectileLife:typeof def.projectileLife==='number'?def.projectileLife:(existing.projectileLife||3),
+    splatRotationRange:typeof def.splatRotationRange==='number'?def.splatRotationRange:(existing.splatRotationRange||0.8),
+    splatImageScale:typeof def.splatImageScale==='number'?def.splatImageScale:(existing.splatImageScale||1),
+    boundsPadX:typeof def.boundsPadX==='number'?def.boundsPadX:(existing.boundsPadX||80),
+    boundsPadY:typeof def.boundsPadY==='number'?def.boundsPadY:(existing.boundsPadY||120),
+    spawnSplat:spawnSplatExplicit?Boolean(def.spawnSplat):(existing.spawnSplat??(mode==='lob')),
+    splatDuration:typeof def.splatDuration==='number'?def.splatDuration:(existing.splatDuration||config.splatDuration),
+    partialSplatDuration:typeof def.partialSplatDuration==='number'?def.partialSplatDuration:(existing.partialSplatDuration||config.partialSplatDuration),
+    drawPreview:typeof def.drawPreview==='function'?def.drawPreview:(existing.drawPreview||null),
+    drawProjectile:typeof def.drawProjectile==='function'?def.drawProjectile:(existing.drawProjectile||null),
+    drawSplat:typeof def.drawSplat==='function'?def.drawSplat:(existing.drawSplat||null),
+    assets:Object.assign({},existing.assets||{}),
+    custom:Boolean(def.custom),
+    recoil:typeof def.recoil==='number'?def.recoil:(existing.recoil||0),
+    power:normalizeWeaponPower(def.power,existing.power),
+    firingSoundSources:collectWeaponPhaseSoundSources(def,id,existingFiringSources,'fire',mode),
+    impactSoundSources:collectWeaponPhaseSoundSources(def,id,existingImpactSources,'impact',mode),
+    autoLaunchScale:hasExplicitLaunchScale?false:(existing.autoLaunchScale!==undefined?existing.autoLaunchScale:true),
+    autoLandingScale:hasExplicitLandingScale?false:(existing.autoLandingScale!==undefined?existing.autoLandingScale:true)
+  };
+  if(!weapon.drawPreview){
+    weapon.drawPreview=mode==='lob'?drawDefaultLobPreview:drawDefaultGunPreview;
+  }
+  if(mode==='lob'&&!weapon.drawProjectile){
+    weapon.drawProjectile=drawDefaultLobProjectile;
+  }
+  if(weapon.spawnSplat&&!weapon.drawSplat){
+    weapon.drawSplat=mode==='lob'?drawDefaultLobSplat:drawDefaultGunSplat;
+  }
+  if(def.preview){
+    weapon.assets.preview=createImageAsset(def.preview);
+  }
+  if(mode==='lob'&&def.projectile){
+    weapon.assets.projectile=createImageAsset(def.projectile);
+  }
+  if(def.splat){
+    weapon.assets.splat=createImageAsset(def.splat);
+    if(!spawnSplatExplicit&&weapon.mode!=='lob'){
+      weapon.spawnSplat=true;
+    }
+  }
+  weaponRegistry.set(id,weapon);
+  return weapon;
+}
+
+function refreshWeaponSelect(preserveValue=true){
+  if(!weaponSelect)return;
+  const previous=preserveValue?weaponSelect.value:null;
+  weaponSelect.innerHTML='';
+  weaponRegistry.forEach(weapon=>{
+    const opt=document.createElement('option');
+    opt.value=weapon.id;
+    opt.textContent=weapon.label||weapon.id;
+    weaponSelect.appendChild(opt);
+  });
+  if(previous&&weaponRegistry.has(previous)){
+    weaponSelect.value=previous;
+  }else if(weaponSelect.options.length){
+    weaponSelect.value=weaponSelect.options[0].value;
+  }
+  currentWeapon=weaponSelect.value||currentWeapon;
+  activeWeapon=weaponRegistry.get(currentWeapon)||activeWeapon;
+}
+
+function normalizeWeaponPower(raw,existing){
+  const toNumber=value=>{
+    if(typeof value==='number')return value;
+    if(typeof value==='string'){const parsed=Number(value.trim());return Number.isFinite(parsed)?parsed:NaN;}
+    return NaN;
+  };
+  const candidates=[raw,existing];
+  for(let i=0;i<candidates.length;i++){
+    const num=toNumber(candidates[i]);
+    if(Number.isFinite(num)&&num>0){
+      return Math.max(1,Math.round(num));
+    }
+  }
+  return 1;
+}
+
+function setActiveWeapon(id){
+  if(isToneMode()){
+    activeWeapon=null;
+    return;
+  }
+  if(!weaponRegistry.size)return;
+  const fallbackId=weaponRegistry.has(id)?id:(weaponRegistry.keys().next().value);
+  currentWeapon=fallbackId;
+  activeWeapon=weaponRegistry.get(fallbackId)||activeWeapon;
+  if(weaponSelect&&weaponSelect.value!==fallbackId){
+    weaponSelect.value=fallbackId;
+  }
+  if(activeWeapon&&activeWeapon.mode!=='lob'&&Array.isArray(projectiles)){
+    projectiles.length=0;
+  }
+}
+
+async function loadWeaponManifest(){
+  const manifestPath='weapons/manifest.json';
+  const url=resolveAssetURL(manifestPath);
+  if(!url)return;
+  let data=null;
+  let lastError=null;
+  try{
+    const res=await fetch(url,{cache:'no-store'});
+    if(res.ok){
+      data=await res.json();
+    }else{
+      lastError=new Error(`HTTP ${res.status}`);
+    }
+  }catch(err){
+    lastError=err;
+  }
+  if(!data&&(window.location.protocol==='file:'||lastError)){
+    try{
+      data=await loadJSONViaXHR(url,manifestPath);
+      lastError=null;
+    }catch(xhrErr){
+      lastError=xhrErr;
+    }
+  }
+  if(!data){
+    if(lastError){
+      console.info('No custom weapon manifest loaded:',lastError&&lastError.message?lastError.message:lastError);
+    }
+    return;
+  }
+  if(Array.isArray(data)){
+    data.forEach(entry=>{
+      if(entry&&entry.id){
+        registerWeapon(Object.assign({},entry,{custom:true}));
+      }
+    });
+    refreshWeaponSelect(true);
+    setActiveWeapon(weaponSelect&&weaponSelect.value?weaponSelect.value:currentWeapon);
+  }else{
+    console.info('Weapon manifest did not return an array; skipping custom weapon load');
+  }
+}
+
+function loadJSONViaXHR(primary,...fallbacks){
+  const queue=[primary,...fallbacks.filter(Boolean)];
+  return new Promise((resolve,reject)=>{
+    let lastErr=null;
+    const attempt=()=>{
+      if(!queue.length){
+        reject(lastErr||new Error('No valid request target'));
+        return;
+      }
+      const target=queue.shift();
+      try{
+        const xhr=new XMLHttpRequest();
+        xhr.open('GET',target,true);
+        xhr.overrideMimeType('application/json');
+        xhr.onreadystatechange=()=>{
+          if(xhr.readyState===XMLHttpRequest.DONE){
+            xhr.onreadystatechange=null;
+            const status=xhr.status;
+            if((status>=200&&status<300)||status===0){
+              try{
+                const parsed=JSON.parse(xhr.responseText||'null');
+                resolve(parsed);
+              }catch(parseErr){
+                lastErr=parseErr;
+                attempt();
+              }
+            }else{
+              lastErr=new Error(`HTTP ${status}`);
+              attempt();
+            }
+          }
+        };
+        xhr.onerror=()=>{
+          xhr.onreadystatechange=null;
+          lastErr=new Error('Network error');
+          attempt();
+        };
+        xhr.send();
+      }catch(err){
+        lastErr=err;
+        attempt();
+      }
+    };
+    attempt();
+  });
+}
+
+function createImageAsset(src){
+  const img=new Image();
+  const asset={img,ready:false,error:false};
+  img.onload=()=>{asset.ready=true;};
+  img.onerror=(err)=>{
+    asset.error=true;
+    console.warn('Failed to load weapon asset',src,err);
+  };
+  img.src=resolveAssetURL(src);
+  return asset;
+}
+
+function resolveAssetURL(path){
+  if(!path)return '';
+  const trimmed=(path+'').trim();
+  if(!trimmed)return '';
+  if(/^data:|^blob:/.test(trimmed))return trimmed;
+  if(/^[a-zA-Z]:[\\\/]/.test(trimmed)){
+    return 'file:///'+trimmed.replace(/\\/g,'/');
+  }
+  if(/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(trimmed)){
+    return trimmed;
+  }
+  const normalized=trimmed.replace(/\\/g,'/');
+  if(/^[a-zA-Z]:\//.test(normalized)){
+    return 'file:///'+normalized;
+  }
+  try{
+    return new URL(normalized,window.location.href).href;
+  }catch(err){
+    return normalized;
+  }
+}
+
+function getActiveWeapon(){
+  if(isToneMode())return null;
+  if(activeWeapon)return activeWeapon;
+  if(currentWeapon&&weaponRegistry.has(currentWeapon)){
+    activeWeapon=weaponRegistry.get(currentWeapon);
+    return activeWeapon;
+  }
+  const first=weaponRegistry.keys().next();
+  if(!first.done){
+    activeWeapon=weaponRegistry.get(first.value);
+    currentWeapon=activeWeapon.id;
+    return activeWeapon;
+  }
+  return null;
+}
+
+function clamp(v,min,max){return Math.max(min,Math.min(max,v));}
+
+const WORD_FONT_FAMILY='"Noto Sans SC","Microsoft YaHei",sans-serif';
+
+function extractToneSequence(source){
+  if(!source) return [5];
+  const id=source.id?String(source.id):'';
+  const text=source.text?String(source.text):'';
+  const cleanText=text.replace(/\s+/g,'');
+  const charCount=Array.from(cleanText||'').length;
+  const segments=id.split(/[_\s-]+/).filter(Boolean);
+  const tones=[];
+  const collectDigits=(segment)=>{
+    if(!segment)return;
+    const matches=String(segment).match(/[1-5]/g);
+    if(matches){
+      matches.forEach(d=>tones.push(Number(d)));
+    }else{
+      tones.push(5);
+    }
+  };
+  if(segments.length){
+    segments.forEach(collectDigits);
+  }else if(id){
+    collectDigits(id);
+  }
+  if(!tones.length){
+    if(charCount>0){
+      return Array(charCount).fill(5);
+    }
+    return [5];
+  }
+  if(charCount>0){
+    if(tones.length>charCount){
+      return tones.slice(0,charCount);
+    }
+    if(tones.length<charCount){
+      return tones.concat(Array(charCount-tones.length).fill(5));
+    }
+  }
+  return tones;
+}
+
+remainingTimeMs=Number(timerSelect.value)*1000;
+showPinyin=pinyinToggle ? pinyinToggle.checked : false;
+if(weaponSelect&&weaponSelect.value){setActiveWeapon(weaponSelect.value);}else{setActiveWeapon(currentWeapon);} 
+updateTimerDisplay();
+
+class Word{
+  constructor(src,x,y,vx,vy){
+    this.id=src.id;this.text=src.text;
+    let initialSources=Array.isArray(src.audioSources)?src.audioSources.slice():[];
+    if(!initialSources.length){
+      initialSources=buildAudioSources(src.audio,this.id,currentDatasetId);
+    }
+    this.audioSources=Array.from(new Set(initialSources.filter(Boolean)));
+    if(!this.audioSources.length&&src.audio){
+      const resolved=resolveAssetURL(src.audio);
+      if(resolved)this.audioSources.push(resolved);
+    }
+    if(!this.audioSources.length&&this.id){
+      this.audioSources=buildAudioSources(null,this.id,currentDatasetId);
+    }
+    this.audio=this.audioSources.length?this.audioSources[0]:src.audio;
+    this.pinyin=src.pinyin||'';
+    this.x=x;this.y=y;this.vx=vx;this.vy=vy;this.size=30;this.w=0;this.h=0;
+    this.layout=null;
+    this.toneSequence=extractToneSequence(src);
+    this.toneProgress=0;
+    const trimmed=(this.text||'').replace(/\s+/g,'');
+    const charCount=Math.max(1,Array.from(trimmed).length);
+    let baseHits=charCount;
+    if(isToneMode()){
+      const toneLength=Array.isArray(this.toneSequence)?this.toneSequence.length:0;
+      if(toneLength>0){
+        baseHits=toneLength;
+      }
+    }
+    if(!(baseHits>0))baseHits=1;
+    this.requiredHits=baseHits;
+    this.hitsLeft=baseHits;
+    this.speed=Math.sqrt(this.vx*this.vx+this.vy*this.vy);
+    this.baseVx=vx;this.baseVy=vy;this.baseSpeed=this.speed;
+    this.computeLayout();
+  }
+  computeLayout(){
+    if(!ctx)return this.layout||{width:this.size+24,height:this.size+24,pad:12,pinyinActive:false,pinyinSize:0};
+    const pad=12;
+    ctx.save();
+    ctx.font=`${this.size}px ${WORD_FONT_FAMILY}`;
+    const textToMeasure=this.text||'';
+    const chineseWidth=ctx.measureText(textToMeasure).width;
+    let width=chineseWidth;
+    let height=this.size;
+    let pinyinActive=false;
+    let pinyinSize=0;
+    if(showPinyin&&this.pinyin){
+      pinyinActive=true;
+      pinyinSize=Math.round(this.size*0.6);
+      ctx.font=`${pinyinSize}px ${WORD_FONT_FAMILY}`;
+      const pinyinText=this.pinyin||'';
+      const pinyinWidth=ctx.measureText(pinyinText).width;
+      width=Math.max(width,pinyinWidth);
+      height+=pinyinSize+8;
+    }
+    ctx.restore();
+    width+=pad*2;
+    height+=pad;
+    if(!(width>0))width=pad*2+this.size;
+    if(!(height>0))height=this.size+pad;
+    const layout={width,height,pad,pinyinActive,pinyinSize};
+    this.layout=layout;
+    this.w=layout.width;
+    this.h=layout.height;
+    return layout;
+  }
+  update(dt){
+    const layout=this.computeLayout();
+    this.x+=this.vx*dt;this.y+=this.vy*dt;
+    const halfW=layout.width/2;
+    const halfH=layout.height/2;
+    const layoutPad=this.layout?this.layout.pad:12;
+    const padX=Math.max(4,Math.min(8,layoutPad*0.5));
+    const padY=Math.max(4,Math.min(10,layoutPad*0.6));
+    const bounceFactor=0.9;
+    const minX=halfW+padX;
+    const maxX=W-halfW-padX;
+    if(minX>maxX){
+      this.x=W/2;
+      this.vx=0;
+    }else if(this.x<minX){
+      this.x=minX;
+      this.vx=Math.abs(this.vx)*bounceFactor;
+    }else if(this.x>maxX){
+      this.x=maxX;
+      this.vx=-Math.abs(this.vx)*bounceFactor;
+    }
+    const minY=halfH+padY;
+    const maxY=H-halfH-padY;
+    if(minY>maxY){
+      this.y=H/2;
+      this.vy=0;
+    }else if(this.y<minY){
+      this.y=minY;
+      this.vy=Math.abs(this.vy)*bounceFactor;
+    }else if(this.y>maxY){
+      this.y=maxY;
+      this.vy=-Math.abs(this.vy)*bounceFactor;
+    }
+    this.speed=Math.sqrt(this.vx*this.vx+this.vy*this.vy);
+  }
+  draw(){
+    const layout=this.layout||this.computeLayout();
+    ctx.save();
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    const pad=layout.pad;
+    const gx=this.x-layout.width/2,gy=this.y-layout.height/2;
+    ctx.fillStyle=activeThemeColors.wordPanel||'rgba(255,255,255,.08)';
+    roundRect(gx,gy,this.w,this.h,12,true,false);
+    let textY=this.y;
+    if(layout.pinyinActive){
+      ctx.fillStyle=activeThemeColors.pinyinText||'rgba(255,255,255,.85)';
+      ctx.font=`${layout.pinyinSize}px ${WORD_FONT_FAMILY}`;
+      const pinyinY=gy+pad/2+layout.pinyinSize/2;
+      ctx.fillText(this.pinyin,this.x,pinyinY);
+      ctx.font=`${this.size}px ${WORD_FONT_FAMILY}`;
+      textY=pinyinY+layout.pinyinSize/2+this.size/2+4;
+    }
+    ctx.fillStyle=activeThemeColors.wordText||'#fff';
+    ctx.font=`${this.size}px ${WORD_FONT_FAMILY}`;
+    ctx.fillText(this.text,this.x,textY);
+    if(this.requiredHits>1){
+      const completed=this.requiredHits-this.hitsLeft;
+      const spacing=12;
+      const radius=3.5;
+      const totalWidth=spacing*(this.requiredHits-1);
+      const startX=this.x-totalWidth/2;
+      const markerY=gy+this.h-10;
+      for(let i=0;i<this.requiredHits;i++){
+        ctx.beginPath();
+        ctx.arc(startX+i*spacing,markerY,radius,0,Math.PI*2);
+        ctx.fillStyle=i<completed?
+          (activeThemeColors.progressFill||'#4ef0a5'):
+          (activeThemeColors.progressEmpty||'rgba(255,255,255,.35)');
+        ctx.fill();
+      }
+    }
+    ctx.restore();
+  }
+  hit(px,py){return px>=this.x-this.w/2&&px<=this.x+this.w/2&&py>=this.y-this.h/2&&py<=this.y+this.h/2;}
+  registerHit(amount=1){
+    const normalized=typeof amount==='number'&&Number.isFinite(amount)?Math.max(1,Math.round(amount)):1;
+    if(this.hitsLeft>0){
+      this.hitsLeft=Math.max(0,this.hitsLeft-normalized);
+    }
+    return this.hitsLeft;
+  }
+  resetHits(){
+    this.hitsLeft=this.requiredHits;
+    this.toneProgress=0;
+    if(typeof this.baseVx==='number'&&typeof this.baseVy==='number'){
+      this.vx=this.baseVx;
+      this.vy=this.baseVy;
+      this.speed=this.baseSpeed||Math.sqrt(this.vx*this.vx+this.vy*this.vy);
+    }
+  }
+  getToneSequenceLength(){
+    return Array.isArray(this.toneSequence)?this.toneSequence.length:0;
+  }
+  getCurrentToneRequirement(){
+    if(!Array.isArray(this.toneSequence)||!this.toneSequence.length)return null;
+    const idx=Math.min(this.toneProgress||0,this.toneSequence.length-1);
+    return this.toneSequence[idx];
+  }
+  advanceToneProgress(step=1){
+    if(!Array.isArray(this.toneSequence)||!this.toneSequence.length)return;
+    const normalized=Math.max(1,Math.round(step||0));
+    const len=this.toneSequence.length;
+    this.toneProgress=Math.min(len,(this.toneProgress||0)+normalized);
+  }
+  redirectAfterPartialHit(boost=1){
+    const currentSpeed=Math.sqrt(this.vx*this.vx+this.vy*this.vy)||this.speed||config.wordSpeed;
+    const boostedSpeed=currentSpeed*boost;
+    const ang=Math.random()*Math.PI*2;
+    this.vx=Math.cos(ang)*boostedSpeed;
+    this.vy=Math.sin(ang)*boostedSpeed;
+    this.speed=boostedSpeed;
+  }
+}
+
+function roundRect(x,y,w,h,r,fill,stroke){ctx.beginPath();
+ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);
+ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();if(fill)ctx.fill();if(stroke)ctx.stroke();}
+
+function collectWeaponPhaseSoundSources(def,id,existingSources,phase,mode){
+  const sources=new Set(Array.isArray(existingSources)?existingSources.filter(Boolean):[]);
+  const addCandidate=(candidate)=>{
+    if(!candidate)return;
+    const normalized=String(candidate).trim().replace(/\\/g,'/');
+    if(!normalized)return;
+    const resolved=resolveAssetURL(normalized);
+    if(resolved)sources.add(resolved);
+    const lastSegment=normalized.split('/').pop();
+    if(lastSegment){
+      const local=`weapons/${id}/${lastSegment}`;
+      const localResolved=resolveAssetURL(local);
+      if(localResolved)sources.add(localResolved);
+    }
+  };
+  const consider=(value)=>{
+    if(!value)return;
+    if(Array.isArray(value)){
+      value.forEach(consider);
+      return;
+    }
+    addCandidate(value);
+  };
+  if(def){
+    if(phase==='fire'){
+      consider(def.firingSound);
+      consider(def.fireSound);
+      if(mode!=='lob'){
+        consider(def.sound);
+      }
+    }else{
+      consider(def.impactSound);
+      consider(def.splatSound);
+      consider(def.hitSound);
+      if(mode==='lob'){
+        consider(def.sound);
+      }
+    }
+  }
+  if(id){
+    if(phase==='fire'){
+      addCandidate(`weapons/${id}/${id}_firing.mp3`);
+      addCandidate(`weapons/${id}/${id}_fire.mp3`);
+      addCandidate(`weapons/${id}/${id}.mp3`);
+    }else{
+      addCandidate(`weapons/${id}/${id}_splat.mp3`);
+      addCandidate(`weapons/${id}/${id}_impact.mp3`);
+      addCandidate(`weapons/${id}/${id}_hit.mp3`);
+    }
+    addCandidate(`weapons/${id}/${phase}.mp3`);
+    if(phase==='fire'){
+      addCandidate(`weapons/${id}/sound.mp3`);
+    }else{
+      addCandidate(`weapons/${id}/splat.mp3`);
+      addCandidate(`weapons/${id}/hit.mp3`);
+    }
+  }
+  return Array.from(sources);
+}
+
+function applyWeaponRecoil(weapon){
+  if(!weapon||weapon.mode!=='hitscan')return;
+  const recoilStrength=typeof weapon.recoil==='number'?weapon.recoil:0;
+  if(!(recoilStrength>0))return;
+  const gain=config.crosshairRecoilGain||10;
+  const cap=config.crosshairRecoilMax||20;
+  crosshairRecoil=Math.min(crosshairRecoil+recoilStrength*gain,cap);
+  const kickGain=config.crosshairKickGain||18;
+  const lateralGain=config.crosshairKickLateral||6;
+  crosshairKickY-=recoilStrength*kickGain;
+  const lateralOffset=(Math.random()*2-1)*recoilStrength*lateralGain;
+  crosshairKickX+=lateralOffset;
+}
+
+class Projectile{
+  constructor(weapon,sx,sy,tx,ty,soundAttempt){
+    this.weapon=weapon;
+    this.soundAttempt=soundAttempt||null;
+    this.x=sx;this.y=sy;
+    const baseDepth=Math.max(260,(weapon.depth||config.projectileDepth||520));
+    const planar=Math.hypot(tx-sx,ty-sy);
+    const depth=baseDepth+planar*0.25;
+    const forwardSpeed=Math.max(300,(weapon.forwardSpeed||config.projectileForwardSpeed||1100));
+    this.depth=depth;
+    this.z=depth;
+    this.vz=-forwardSpeed;
+    const travelTime=depth/forwardSpeed;
+    const g=weapon.gravity||config.projectileGravity||1500;
+    this.vx=(tx-sx)/travelTime;
+    const dy=ty-sy;
+    this.vy=(dy-0.5*g*travelTime*travelTime)/travelTime;
+    this.radius=weapon.projectileRadius||config.lobDefaultRadius||18;
+    this.rotation=Math.random()*Math.PI*2;
+    const spinRange=typeof weapon.spinRange==='number'?weapon.spinRange:4;
+    this.spin=(Math.random()*2-1)*spinRange;
+    this.life=0;
+    this.lifeLimit=weapon.projectileLife||3;
+    this.boundsPadX=weapon.boundsPadX||80;
+    this.boundsPadY=weapon.boundsPadY||120;
+    this.landed=false;
+    this.landingAge=0;
+    this.spawnSplat=weapon.spawnSplat!==false;
+    const minScale=(weapon.projectileLandingScale??weapon.projectileMinScale??config.projectileMinScale)||0.6;
+    const maxScale=(weapon.projectileLaunchScale??weapon.projectileMaxScale??config.projectileMaxScale)||1.1;
+    this.landingScale=Math.min(minScale,maxScale);
+    this.launchScale=Math.max(minScale,maxScale);
+    this.imageScale=weapon.projectileImageScale||1;
+    this.landingGrace=typeof weapon.landingGrace==='number'?weapon.landingGrace:(config.projectileLandingGrace||0.2);
+    this._scaleAdjusted=false;
+  }
+  update(dt){
+    const g=this.weapon.gravity||config.projectileGravity||1500;
+    if(!this.landed){
+      this.vy+=g*dt;
+      this.x+=this.vx*dt;
+      this.y+=this.vy*dt;
+      this.z+=this.vz*dt;
+      if(this.z<=0){
+        this.z=0;
+        this.landed=true;
+        this.vx=0;
+        this.vy=0;
+      }
+    }else{
+      this.landingAge+=dt;
+    }
+    this.rotation+=this.spin*dt;
+    this.life+=dt;
+  }
+  readyForCollision(){return this.landed;}
+  missedWindow(){return this.landed&&this.landingAge>=this.landingGrace;}
+  draw(){
+    const asset=this.weapon.assets&&this.weapon.assets.projectile;
+    if(!this._scaleAdjusted){
+      const previewWidth=this.weapon.previewDrawWidth;
+      if(previewWidth){
+        let baseWidth=0;
+        if(asset&&asset.ready){
+          baseWidth=(asset.img.width||0)*this.imageScale;
+        }else if(!asset){
+          baseWidth=this.radius*2.5;
+        }
+        if(baseWidth>0){
+          const desiredLaunch=previewWidth/baseWidth;
+          const desiredLand=desiredLaunch*0.62;
+          if(this.weapon.autoLaunchScale){
+            this.launchScale=desiredLaunch;
+          }
+          if(this.weapon.autoLandingScale){
+            this.landingScale=Math.max(desiredLand,desiredLaunch*0.45);
+          }
+          if(this.landingScale>this.launchScale){
+            const swap=this.landingScale;
+            this.landingScale=this.launchScale;
+            this.launchScale=swap;
+          }
+          this._scaleAdjusted=true;
+        }
+      }
+    }
+    ctx.save();
+    ctx.translate(this.x,this.y);
+    ctx.rotate(this.rotation);
+    const depthRatio=this.depth?Math.max(0,Math.min(1,this.z/this.depth)):0;
+    const scale=this.landingScale+depthRatio*(this.launchScale-this.landingScale);
+    ctx.scale(scale,scale);
+    if(asset&&asset.ready){
+      const img=asset.img;
+      const w=img.width*this.imageScale;
+      const h=img.height*this.imageScale;
+      ctx.drawImage(img,-w/2,-h/2,w,h);
+    }else if(typeof this.weapon.drawProjectile==='function'){
+      this.weapon.drawProjectile(ctx,this);
+    }else{
+      ctx.fillStyle='#d73524';
+      ctx.beginPath();
+      ctx.ellipse(0,0,this.radius*1.25,this.radius,0,0,Math.PI*2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+  isOutOfBounds(){
+    const padX=this.boundsPadX||80;
+    const padY=this.boundsPadY||120;
+    return this.x<-padX||this.x>W+padX||this.y>H+padY||this.life>(this.lifeLimit||3);
+  }
+}
+
+class Splat{
+  constructor(weapon,x,y,w,h,duration,options={}){
+    this.weapon=weapon;
+    this.x=x;this.y=y;
+    this.w=w;this.h=h;
+    const rotationRange=weapon&&typeof weapon.splatRotationRange==='number'?weapon.splatRotationRange:0.8;
+    this.rotation=(Math.random()-0.5)*rotationRange;
+    this.life=0;
+    this.duration=duration;
+    this.partial=Boolean(options.partial);
+    this.asset=weapon&&weapon.assets?weapon.assets.splat:null;
+    this.splatScale=weapon&&typeof weapon.splatImageScale==='number'?weapon.splatImageScale:1;
+    this.blobs=Array.from({length:5},()=>{
+      const ang=Math.random()*Math.PI*2;
+      const dist=Math.random()*0.6*Math.max(w,h);
+      const rx=Math.random()*0.3+0.2;
+      const ry=Math.random()*0.3+0.2;
+      return {x:Math.cos(ang)*dist*0.3,y:Math.sin(ang)*dist*0.25,rx,ry};
+    });
+  }
+  update(dt){
+    const asset=this.asset;
+    if(asset){
+      if(asset.error){
+        this.life=this.duration;
+        if(this.weapon)this.weapon.spawnSplat=false;
+        return;
+      }
+      if(!asset.ready){
+        return;
+      }
+    }
+    this.life+=dt;
+  }
+  draw(){
+    const alpha=Math.max(0,1-this.life/this.duration);
+    if(alpha<=0)return;
+    ctx.save();
+    ctx.translate(this.x,this.y);
+    ctx.rotate(this.rotation);
+    const asset=this.asset;
+    const hasCustomDrawer=this.weapon&&typeof this.weapon.drawSplat==='function';
+    if(asset&&asset.ready){
+      const img=asset.img;
+      const previewW=this.weapon&&this.weapon.previewDrawWidth?this.weapon.previewDrawWidth*1.08:0;
+      const previewH=this.weapon&&this.weapon.previewDrawHeight?this.weapon.previewDrawHeight*0.95:0;
+      const coverW=Math.max(120,this.w*1.35,previewW||0);
+      const coverH=Math.max(82,this.h*0.98,previewH||0);
+      const scale=Math.min(coverW/(img.width||1),coverH/(img.height||1))*this.splatScale;
+      const w=img.width*scale;
+      const h=img.height*scale;
+      ctx.globalAlpha=alpha*(this.partial?0.75:1);
+      ctx.drawImage(img,-w/2,-h/2,w,h);
+      ctx.restore();
+      return;
+    }
+    if(asset&&asset.error){
+      ctx.restore();
+      return;
+    }
+    if(hasCustomDrawer){
+      ctx.globalAlpha=alpha*(this.partial?0.8:1);
+      this.weapon.drawSplat(ctx,this);
+    }
+    ctx.restore();
+  }
+  expired(){return this.life>=this.duration;}
+}
+
+function loadSFX(){sfx.hit=new Audio('sfx/hit.mp3');sfx.miss=new Audio('sfx/miss.mp3');sfx.wrong=new Audio('sfx/wrong.mp3');
+for(const k of Object.keys(sfx)){sfx[k].onerror=()=>{sfx[k]=null;};}}
+function playSFX(type){
+  const a=sfx[type];
+  if(a){
+    try{
+      a.currentTime=0;
+      const res=a.play();
+      if(res&&typeof res.catch==='function'){
+        res.catch(()=>{});
+      }
+      return true;
+    }catch(e){}
+  }
+  try{
+    if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+    g.gain.value=type==='hit'?0.08:0.06;o.frequency.value=type==='hit'?880:(type==='wrong'?220:440);
+    o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+.12);
+    return true;
+  }catch(e){}
+  return false;
+}
+
+function initWeaponSoundAttempt(weapon){
+  if(!weapon)return null;
+  const attempt={
+    id:(weapon._soundAttemptId||0)+1,
+    weaponId:weapon.id,
+    phases:{
+      fire:{attempted:false,usedCustom:false,usedDefault:false},
+      impact:{attempted:false,usedCustom:false,usedDefault:false,defaultSuppressed:false}
+    }
+  };
+  weapon._soundAttemptId=attempt.id;
+  return attempt;
+}
+
+function ensureWeaponSoundAttempt(weapon,existingAttempt){
+  if(!weapon)return null;
+  if(existingAttempt&&existingAttempt.weaponId===weapon.id){
+    return existingAttempt;
+  }
+  return initWeaponSoundAttempt(weapon);
+}
+
+function playWeaponSound(weapon,phase='fire',existingAttempt=null){
+  if(!weapon)return existingAttempt||null;
+  const normalizedPhase=phase==='impact'?'impact':'fire';
+  const attempt=ensureWeaponSoundAttempt(weapon,existingAttempt);
+  if(!attempt)return null;
+  const phaseState=attempt.phases[normalizedPhase]||(attempt.phases[normalizedPhase]={attempted:false,usedCustom:false,usedDefault:false,defaultSuppressed:false});
+  if(phaseState.usedCustom||phaseState.usedDefault||phaseState.defaultSuppressed){
+    return attempt;
+  }
+  phaseState.attempted=true;
+  const allowDefault=!weapon.custom&&(
+    normalizedPhase==='impact'?weapon.mode==='lob':weapon.mode!=='lob'
+  );
+  const sources=Array.isArray(normalizedPhase==='impact'?weapon.impactSoundSources:weapon.firingSoundSources)?
+    (normalizedPhase==='impact'?weapon.impactSoundSources:weapon.firingSoundSources):[];
+  for(const src of sources){
+    const audio=createAudioElement(src);
+    if(!audio)continue;
+    let cleanupPlaying=null;
+    let fallbackUsed=false;
+    const handleFailure=()=>{
+      if(fallbackUsed)return;
+      fallbackUsed=true;
+      if(audio.removeEventListener){
+        audio.removeEventListener('error',handleFailure);
+        if(cleanupPlaying){
+          audio.removeEventListener('playing',cleanupPlaying);
+        }
+      }
+      if(!allowDefault){
+        phaseState.defaultSuppressed=true;
+        return;
+      }
+      const defaultPlayed=playDefaultWeaponSound(weapon,normalizedPhase,phaseState,attempt);
+      if(defaultPlayed){
+        phaseState.usedDefault=true;
+      }else{
+        phaseState.defaultSuppressed=true;
+      }
+    };
+    if(audio.addEventListener){
+      audio.addEventListener('error',handleFailure,{once:true});
+      cleanupPlaying=()=>{
+        if(audio.removeEventListener){
+          audio.removeEventListener('error',handleFailure);
+        }
+      };
+      audio.addEventListener('playing',cleanupPlaying,{once:true});
+    }
+    try{
+      audio.currentTime=0;
+      const res=audio.play();
+      phaseState.usedCustom=true;
+      if(res&&typeof res.catch==='function'){
+        res.catch(()=>{
+          phaseState.usedCustom=false;
+          handleFailure();
+        });
+      }
+      return attempt;
+    }catch(err){
+      if(audio.removeEventListener){
+        audio.removeEventListener('error',handleFailure);
+        if(cleanupPlaying){
+          audio.removeEventListener('playing',cleanupPlaying);
+        }
+      }
+    }
+  }
+  if(!allowDefault){
+    phaseState.defaultSuppressed=true;
+    return attempt;
+  }
+  const defaultPlayed=playDefaultWeaponSound(weapon,normalizedPhase,phaseState,attempt);
+  if(defaultPlayed){
+    phaseState.usedDefault=true;
+  }else{
+    phaseState.defaultSuppressed=true;
+  }
+  return attempt;
+}
+
+function playDefaultWeaponSound(weapon,phase,phaseState,attempt){
+  if(!weapon)return false;
+  if(phase==='fire'&&weapon.mode==='lob'){
+    return false;
+  }
+  if(phase==='impact'&&weapon.mode!=='lob'){
+    return false;
+  }
+  const priorFire=attempt&&attempt.phases&&attempt.phases.fire;
+  if(phase==='impact'&&priorFire&&priorFire.usedDefault){
+    return false;
+  }
+  const success=playSFX('hit');
+  if(!success&&phaseState){
+    phaseState.defaultSuppressed=true;
+  }
+  return success;
+}
+
+const mouse={x:W/2,y:H/2};
+function updateMousePosition(clientX,clientY){
+  if(!canvas)return;
+  const rect=canvas.getBoundingClientRect();
+  const scaleX=rect.width?canvas.width/rect.width:1;
+  const scaleY=rect.height?canvas.height/rect.height:1;
+  mouse.x=(clientX-rect.left)*scaleX;
+  mouse.y=(clientY-rect.top)*scaleY;
+}
+canvas.addEventListener('mousemove',e=>{updateMousePosition(e.clientX,e.clientY);});
+canvas.addEventListener('mousedown',e=>{updateMousePosition(e.clientX,e.clientY);if(running&&!paused&&!isToneMode())handleShot(mouse.x,mouse.y);resetInactivity();});
+window.addEventListener('keydown',e=>{
+  const key=e.key.toLowerCase();
+  if(key==='r'){
+    replayAudio();
+    resetInactivity();
+    return;
+  }
+  if(!running||paused||!isToneMode())return;
+  if(toneKeyMap.has(key)){
+    const toneNumber=toneKeyMap.get(key);
+    pulseToneButton(toneNumber);
+    handleToneInput(toneNumber);
+    resetInactivity();
+    e.preventDefault();
+  }
+});
+
+startBtn.onclick=()=>{
+  restartGame().catch(err=>console.error('重新开始游戏失败：',err));
+};
+pauseBtn.onclick=()=>{if(!running)return;paused=!paused;pauseBtn.textContent=paused?'Resume':'Pause';};
+const menuBtn=document.getElementById('menuBtn');
+if(menuBtn){
+  menuBtn.addEventListener('click',()=>{
+    returnToMenu();
+  });
+}
+speedSelect.addEventListener('change',()=>{
+  const newSpeed=Number(speedSelect.value);
+  adjustWordSpeed(newSpeed);
+});
+pinyinToggle.addEventListener('change',()=>{showPinyin=pinyinToggle.checked;});
+if(themeSelect){
+  themeSelect.addEventListener('change',()=>{
+    applyTheme(themeSelect.value);
+  });
+}
+if(replayBtn){
+  replayBtn.addEventListener('click',()=>{
+    replayAudio();
+    resetInactivity();
+  });
+}
+if(weaponSelect){
+  weaponSelect.addEventListener('change',()=>{
+    if(isToneMode())return;
+    setActiveWeapon(weaponSelect.value);
+  });
+}
+if(modeSelect){
+  modeSelect.addEventListener('change',()=>{
+    const desired=modeSelect.value===MODE_TONE?MODE_TONE:MODE_SHOOTING;
+    if(running){
+      restartGame(desired);
+      return;
+    }
+    abortGame({silent:true,resetScore:true});
+    setGameMode(desired);
+    updateModeUI();
+  });
+}
+timerSelect.addEventListener('change',()=>{
+  const newDuration=Math.max(0,Number(timerSelect.value)*1000);
+  remainingTimeMs=newDuration;
+  if(running){
+    restartGame().catch(err=>console.error('重新启动游戏以应用新的倒计时失败：',err));
+    return;
+  }
+  updateTimerDisplay();
+});
+let last=performance.now();
+function loop(now){const dt=(now-last)/1000;last=now;
+if(running&&!paused){
+  floating.forEach(f=>f.update(dt));
+  updateProjectiles(dt);
+  updateSplats(dt);
+  while(floating.length<config.spawnCount)spawnOne();
+} else {
+  updateSplats(dt);
+}
+updateCrosshairState(dt);
+render();requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+
+function render(){
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle=activeThemeColors.canvasBg||'#071129';
+  ctx.fillRect(0,0,W,H);
+  floating.forEach(f=>f.draw());
+  splats.forEach(s=>s.draw());
+  projectiles.forEach(p=>p.draw());
+  if(!isToneMode()){
+    drawWeaponPreview();
+    drawCrosshair(mouse.x,mouse.y);
+  }
+  scoreEl.textContent=score;comboEl.textContent=combo;roundEl.textContent=round;
+}
+function drawWeaponPreview(){
+  const weapon=getActiveWeapon();
+  if(!weapon)return;
+  syncLauncherOrigin();
+  const previewPad=(config.launcherPreviewBottomPad??16);
+  const previewRise=(config.launcherPreviewRise??14);
+  const shadowW=(config.launcherShadowWidth??34);
+  const shadowH=(config.launcherShadowHeight??11);
+  const leftPad=(config.launcherPreviewLeftPad??32);
+  const areaWidth=weapon.previewBaseWidth||config.launcherPreviewAreaWidth||128;
+  const baseY=H-(previewPad+previewRise+6);
+  ctx.save();
+  ctx.translate(leftPad,baseY);
+  ctx.fillStyle=activeThemeColors.weaponShadow||'rgba(0,0,0,0.35)';
+  ctx.beginPath();
+  ctx.ellipse(areaWidth/2,previewRise+6,shadowW,shadowH,0,0,Math.PI*2);
+  ctx.fill();
+  ctx.save();
+  ctx.translate(areaWidth/2,-previewRise);
+  const asset=weapon.assets&&weapon.assets.preview;
+  if(asset&&asset.ready){
+    const img=asset.img;
+    const baseScale=(weapon.previewScale||1)*(weapon.previewImageScale||1);
+    const width=img.width*baseScale;
+    const height=img.height*baseScale;
+    const maxW=weapon.previewBaseWidth||config.launcherPreviewAreaWidth||128;
+    const maxH=weapon.previewBaseHeight||86;
+    const fit=Math.min(1,maxW/(width||1),maxH/(height||1));
+    const finalScale=baseScale*fit;
+    const w=img.width*finalScale;
+    const h=img.height*finalScale;
+    weapon.previewDrawWidth=w;
+    weapon.previewDrawHeight=h;
+    ctx.drawImage(img,-w/2,-h+weapon.previewOffsetY,w,h);
+  }else{
+    ctx.save();
+    const scale=weapon.previewScale||1;
+    ctx.scale(scale,scale);
+    if(typeof weapon.drawPreview==='function'){
+      weapon.drawPreview(ctx,weapon);
+    }else{
+      drawDefaultGunPreview(ctx,weapon);
+    }
+    ctx.restore();
+    if(!weapon.previewDrawWidth||!weapon.previewDrawHeight){
+      const baseW=(weapon.previewBaseWidth||config.launcherPreviewAreaWidth||128)*(weapon.previewScale||1)*0.78;
+      const baseH=(weapon.previewBaseHeight||86)*(weapon.previewScale||1)*0.78;
+      weapon.previewDrawWidth=baseW;
+      weapon.previewDrawHeight=baseH;
+    }
+  }
+  ctx.restore();
+  ctx.restore();
+  ctx.save();
+  ctx.fillStyle=activeThemeColors.previewLabel||'rgba(255,255,255,.62)';
+  ctx.font='14px "Noto Sans SC","Microsoft YaHei",sans-serif';
+  ctx.textAlign='left';
+  const labelY=H-Math.max(6,previewPad-4);
+  ctx.fillText(weapon.label||weapon.id,leftPad,labelY);
+  ctx.restore();
+}
+
+function drawDefaultGunPreview(ctx,weapon){
+  ctx.save();
+  ctx.translate(0,-4);
+  ctx.fillStyle='#111723';
+  ctx.fillRect(-48,18,96,10);
+  ctx.fillStyle='#2a3141';
+  ctx.fillRect(-46,0,88,20);
+  ctx.fillStyle='#3d475b';
+  ctx.fillRect(-38,-10,60,16);
+  ctx.fillStyle='#d6dde7';
+  ctx.fillRect(-10,-20,44,12);
+  ctx.fillStyle='#0d111a';
+  ctx.beginPath();
+  ctx.moveTo(28,-6);
+  ctx.lineTo(40,-2);
+  ctx.lineTo(28,4);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle='#1a2233';
+  ctx.fillRect(-30,6,24,20);
+  ctx.fillStyle='#121a2a';
+  ctx.fillRect(-6,8,28,18);
+  ctx.restore();
+  if(weapon){
+    const scale=weapon.previewScale||1;
+    const width=96*scale;
+    const height=46*scale;
+    if(!weapon.previewDrawWidth||weapon.previewDrawWidth<width){
+      weapon.previewDrawWidth=width;
+    }
+    if(!weapon.previewDrawHeight||weapon.previewDrawHeight<height){
+      weapon.previewDrawHeight=height;
+    }
+  }
+}
+
+function drawDefaultGunProjectile(ctx){
+  ctx.fillStyle='#f5d259';
+  ctx.beginPath();
+  ctx.ellipse(2,0,6,2.6,0,0,Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle='#d3952f';
+  ctx.beginPath();
+  ctx.ellipse(-3,0,4,2,0,0,Math.PI*2);
+  ctx.fill();
+}
+
+function drawDefaultGunSplat(ctx,splat){
+  const width=Math.max(40,splat.w*0.46);
+  const height=Math.max(18,splat.h*0.24);
+  ctx.fillStyle='rgba(255,245,200,0.85)';
+  ctx.beginPath();
+  ctx.ellipse(0,0,width/2,height/2,0,0,Math.PI*2);
+  ctx.fill();
+}
+
+function drawDefaultLobPreview(ctx,weapon){
+  ctx.save();
+  ctx.translate(0,-8);
+  ctx.fillStyle='#d73524';
+  ctx.beginPath();
+  ctx.ellipse(0,-6,32,26,0,0,Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle='#f05f4a';
+  ctx.beginPath();
+  ctx.ellipse(-8,-12,16,10,0,0,Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle='#2e9b45';
+  ctx.beginPath();
+  ctx.moveTo(0,-32);
+  ctx.lineTo(-12,-20);
+  ctx.lineTo(0,-18);
+  ctx.lineTo(12,-24);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+  if(weapon){
+    const scale=weapon.previewScale||1;
+    const width=64*scale;
+    const height=56*scale;
+    if(!weapon.previewDrawWidth||weapon.previewDrawWidth<width){
+      weapon.previewDrawWidth=width;
+    }
+    if(!weapon.previewDrawHeight||weapon.previewDrawHeight<height){
+      weapon.previewDrawHeight=height;
+    }
+  }
+}
+
+function drawDefaultLobProjectile(ctx,projectile){
+  const r=projectile&&projectile.radius?projectile.radius:config.lobDefaultRadius;
+  ctx.fillStyle='#d73524';
+  ctx.beginPath();
+  ctx.ellipse(0,0,r*1.25,r,0,0,Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.35)';
+  ctx.beginPath();
+  ctx.ellipse(-r*0.3,-r*0.25,r*0.45,r*0.35,0,0,Math.PI*2);
+  ctx.fill();
+}
+
+function drawDefaultLobSplat(ctx,splat){
+  const baseW=Math.max(120,splat.w*1.28);
+  const baseH=Math.max(88,splat.h*0.9);
+  ctx.fillStyle='rgba(200,32,28,0.9)';
+  ctx.beginPath();
+  ctx.ellipse(0,0,baseW/2,baseH/2,0,0,Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle='rgba(255,140,100,0.55)';
+  splat.blobs.forEach(b=>{
+    ctx.beginPath();
+    ctx.ellipse(b.x,b.y,(baseW/4)*b.rx,(baseH/4)*b.ry,0,0,Math.PI*2);
+    ctx.fill();
+  });
+}
+
+function drawCrosshair(x,y){
+  const baseRadius=config.crosshairBaseRadius||18;
+  const baseGap=config.crosshairBaseGap||8;
+  const lineLength=config.crosshairLineLength||28;
+  const radius=baseRadius+crosshairRecoil;
+  const gap=baseGap+crosshairRecoil*0.6;
+  const outer=radius+gap;
+  const tail=outer+Math.max(0,lineLength-baseRadius);
+  const cx=x+crosshairKickX;
+  const cy=y+crosshairKickY;
+  ctx.save();
+  ctx.lineWidth=2;
+  ctx.strokeStyle=activeThemeColors.crosshair||'rgba(255,255,255,.9)';
+  ctx.beginPath();
+  ctx.arc(cx,cy,radius,0,Math.PI*2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx-tail,cy);
+  ctx.lineTo(cx-outer,cy);
+  ctx.moveTo(cx+outer,cy);
+  ctx.lineTo(cx+tail,cy);
+  ctx.moveTo(cx,cy-tail);
+  ctx.lineTo(cx,cy-outer);
+  ctx.moveTo(cx,cy+outer);
+  ctx.lineTo(cx,cy+tail);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function spawnOne(){if(!words.length)return;const src=drawFromSpawnBag();if(!src)return;
+const x=80+Math.random()*(W-160),y=90+Math.random()*(H-220);
+const sp=config.wordSpeed+(round-1)*8;const ang=Math.random()*Math.PI*2;
+const base=18+Math.random()*sp/2;
+const vx=Math.cos(ang)*base,vy=Math.sin(ang)*base;
+const word=new Word(src,x,y,vx,vy);
+const padX=20,padY=20;
+const halfW=word.w/2,halfH=word.h/2;
+const minX=halfW+padX,maxX=W-halfW-padX;
+const minY=halfH+padY,maxY=H-halfH-padY;
+if(minX<=maxX)word.x=clamp(word.x,minX,maxX);else{word.x=W/2;word.vx=0;}
+if(minY<=maxY)word.y=clamp(word.y,minY,maxY);else{word.y=H/2;word.vy=0;}
+floating.push(word);}
+function pickFromScreen(){if(!floating.length)spawnOne();return floating[Math.floor(Math.random()*floating.length)];}
+function playFor(t,resetProgress=true){stopAudio();currentTarget=t;
+if(resetProgress&&currentTarget&&typeof currentTarget.resetHits==='function'){currentTarget.resetHits();}
+playWordAudio(t,0,true);resetInactivity();}
+function replayAudio(){if(currentTarget)playWordAudio(currentTarget,0,false);}
+function stopAudio(){if(currentAudio){try{currentAudio.pause();}catch(e){}
+if(currentAudio){currentAudio.onerror=null;currentAudio.onended=null;}
+try{currentAudio.currentTime=0;}catch(e){} }currentAudio=null;currentAudioSources=[];currentAudioSourceIndex=0;}
+
+function ensureWordAudioSources(word){
+  if(!word)return [];
+  if(!Array.isArray(word.audioSources)||!word.audioSources.length){
+    const built=buildAudioSources(word.audio,word.id,currentDatasetId);
+    if(built.length){
+      word.audioSources=built.slice();
+      word.audio=word.audioSources[0];
+    }else{
+      word.audioSources=[];
+    }
+  }
+  return word.audioSources;
+}
+
+function playWordAudio(word,startIndex=0,showFailureHint=true){
+  if(!word)return;
+  const sources=ensureWordAudioSources(word);
+  if(!sources.length){
+    if(showFailureHint)flash('未找到对应的音频文件，请检查 audio 目录下的词库子文件夹',1600);
+    return;
+  }
+  currentAudioSources=sources.slice();
+  const beginIndex=Math.max(0,Math.min(startIndex||0,currentAudioSources.length-1));
+  attemptWordAudio(word,currentAudioSources,beginIndex,showFailureHint);
+}
+
+function attemptWordAudio(word,sources,index,showFailureHint){
+  if(!word||currentTarget!==word)return;
+  if(!Array.isArray(sources)||!sources.length)return;
+  if(index>=sources.length){
+    if(showFailureHint)flash('音频加载失败，请检查文件路径或文件名',1800);
+    return;
+  }
+  const src=sources[index];
+  if(!src){
+    attemptWordAudio(word,sources,index+1,showFailureHint);
+    return;
+  }
+  const audio=createAudioElement(src);
+  if(!audio){
+    attemptWordAudio(word,sources,index+1,showFailureHint);
+    return;
+  }
+  word.audio=src;
+  try{audio.pause();}catch(e){}
+  try{audio.currentTime=0;}catch(e){}
+  audio.playbackRate=1;
+  currentAudio=audio;
+  currentAudioSourceIndex=index;
+  let settled=false;
+  const key=src;
+  const cleanup=()=>{audio.onerror=null;audio.onended=null;};
+  const advance=()=>{
+    if(settled)return;
+    settled=true;
+    cleanup();
+    delete audioCache[key];
+    if(currentTarget===word){
+      attemptWordAudio(word,sources,index+1,showFailureHint);
+    }
+  };
+  audio.onerror=advance;
+  audio.onended=cleanup;
+  try{
+    const playPromise=audio.play();
+    if(playPromise&&typeof playPromise.catch==='function'){
+      playPromise.catch(err=>{
+        if(settled)return;
+        settled=true;
+        cleanup();
+        if(err&&err.name==='NotAllowedError'){
+          flash('如无声，请点击“重播”按钮或按 R 键重播。',1200);
+        }else if(currentTarget===word){
+          delete audioCache[key];
+          attemptWordAudio(word,sources,index+1,showFailureHint);
+        }
+      });
+    }
+  }catch(err){
+    advance();
+  }
+}
+
+function createAudioElement(src){
+  if(!src)return null;
+  const key=src;
+  if(audioCache[key])return audioCache[key];
+  try{
+    const audio=new Audio(src);
+    audio.preload='auto';
+    audioCache[key]=audio;
+    return audio;
+  }catch(err){
+    console.warn('无法创建音频：',src,err);
+    return null;
+  }
+}
+function resetInactivity(){if(inactivityTimer){clearTimeout(inactivityTimer);inactivityTimer=null;}
+if(!autoReplayCk.checked)return;inactivityTimer=setTimeout(()=>{replayAudio();},config.inactivityMs);}
+function handleShot(px,py){
+  if(!running||paused)return;
+  const weapon=getActiveWeapon();
+  if(!weapon)return;
+  syncLauncherOrigin();
+  const shouldPlayImmediately=weapon.mode!=='lob';
+  const soundAttempt=shouldPlayImmediately?playWeaponSound(weapon,'fire'):initWeaponSoundAttempt(weapon);
+  if(weapon.mode==='hitscan'){
+    applyWeaponRecoil(weapon);
+  }
+  if(weapon.mode==='lob'){
+    launchProjectile(weapon,px,py,soundAttempt);
+  }else{
+    handleHitscanShot(weapon,px,py,soundAttempt);
+  }
+}
+
+function handleToneInput(rawTone){
+  if(!running||paused||!isToneMode())return;
+  const toneNumber=Number(rawTone);
+  if(!Number.isFinite(toneNumber))return;
+  const target=currentTarget;
+  if(!target){
+    flash('暂无可辨识的目标',360);
+    return;
+  }
+  const expectedRaw=target.getCurrentToneRequirement();
+  const expected=Number(expectedRaw);
+  const normalizedExpected=Number.isFinite(expected)?expected:5;
+  if(toneNumber===normalizedExpected){
+    const remaining=target.registerHit(1);
+    target.advanceToneProgress(1);
+    const sequenceLength=target.getToneSequenceLength();
+    const finished=remaining<=0||(sequenceLength>0&&target.toneProgress>=sequenceLength);
+    playSFX('hit');
+    if(finished){
+      score+=10+combo*2;
+      combo++;
+      let replaced=false;
+      const idx=floating.indexOf(target);
+      if(idx>=0){
+        floating.splice(idx,1);
+        replaced=true;
+      }
+      if(replaced||floating.length<config.spawnCount){
+        spawnOne();
+      }
+      currentTarget=null;
+      stopAudio();
+      setTimeout(()=>{playFor(pickFromScreen());},config.nextDelayOnHit);
+      flash('✔ 声调正确！',360);
+    }else{
+      if(target.requiredHits>1){
+        target.redirectAfterPartialHit(config.partialHitBoost);
+      }
+      flash(`还剩 ${remaining} 个声调`,420);
+    }
+  }else{
+    playSFX('wrong');
+    score=Math.max(0,score-3);
+    combo=0;
+    if(typeof target.resetHits==='function'){
+      target.resetHits();
+    }
+    let replaced=false;
+    const idx=floating.indexOf(target);
+    if(idx>=0){
+      floating.splice(idx,1);
+      replaced=true;
+    }
+    if(replaced||floating.length<config.spawnCount){
+      spawnOne();
+    }
+    playFor(pickFromScreen());
+    flash('✖ 声调错误',650);
+  }
+}
+
+function handleHitscanShot(weapon,px,py,soundAttempt){
+  for(let i=floating.length-1;i>=0;i--){
+    const word=floating[i];
+    if(word.hit(px,py)){
+      resolveWordHit(word,i,{weapon,spawnSplat:weapon&&weapon.spawnSplat,soundAttempt});
+      return;
+    }
+  }
+  handleMiss();
+}
+
+function launchProjectile(weapon,px,py,soundAttempt){
+  const originX=launcherOrigin.x;
+  const originY=launcherOrigin.y;
+  const projectile=new Projectile(weapon,originX,originY,px,py,soundAttempt);
+  projectiles.push(projectile);
+}
+
+function updateProjectiles(dt){
+  for(let i=projectiles.length-1;i>=0;i--){
+    const p=projectiles[i];
+    p.update(dt);
+    if(p.readyForCollision()){
+      let collided=false;
+      for(let j=floating.length-1;j>=0;j--){
+        const word=floating[j];
+        if(projectileHitsWord(p,word)){
+          collided=true;
+          projectiles.splice(i,1);
+          resolveWordHit(word,j,{spawnSplat:p.spawnSplat!==false,weapon:p.weapon,soundAttempt:p.soundAttempt});
+          break;
+        }
+      }
+      if(collided)continue;
+      if(p.missedWindow()){
+        projectiles.splice(i,1);
+        handleMiss(p.weapon);
+        continue;
+      }
+    }
+    if(p.isOutOfBounds()){
+      projectiles.splice(i,1);
+      handleMiss(p.weapon);
+    }
+  }
+}
+
+function updateSplats(dt){
+  for(let i=splats.length-1;i>=0;i--){
+    const s=splats[i];
+    s.update(dt);
+    if(s.expired())splats.splice(i,1);
+  }
+}
+
+function approachZero(value,delta){
+  if(value>delta)return value-delta;
+  if(value<-delta)return value+delta;
+  return 0;
+}
+
+function updateCrosshairState(dt){
+  if(!(dt>0))return;
+  const recoveryRate=config.crosshairRecoilRecovery||20;
+  const maxDelta=dt*recoveryRate;
+  crosshairRecoil=Math.max(0,crosshairRecoil-maxDelta);
+  const returnRate=config.crosshairKickReturn||60;
+  const kickDelta=dt*returnRate;
+  crosshairKickX=approachZero(crosshairKickX,kickDelta);
+  crosshairKickY=approachZero(crosshairKickY,kickDelta);
+}
+
+function projectileHitsWord(p,word){
+  const halfW=(word.w&&word.w>0)?word.w/2:Math.max(40,(word.text||'').length*18);
+  const halfH=(word.h&&word.h>0)?word.h/2:Math.max(28,word.requiredHits*20);
+  const left=word.x-halfW,right=word.x+halfW,top=word.y-halfH,bottom=word.y+halfH;
+  const closestX=Math.max(left,Math.min(p.x,right));
+  const closestY=Math.max(top,Math.min(p.y,bottom));
+  const dx=p.x-closestX,dy=p.y-closestY;
+  return dx*dx+dy*dy<=p.radius*p.radius;
+}
+
+function weaponCanRenderSplat(weapon){
+  if(!weapon||weapon.spawnSplat===false)return false;
+  const asset=weapon.assets&&weapon.assets.splat;
+  if(asset){
+    if(asset.error){
+      weapon.spawnSplat=false;
+      return false;
+    }
+    return true;
+  }
+  return typeof weapon.drawSplat==='function';
+}
+
+function createSplat(word,linger,weapon,partial=false){
+  const usedWeapon=weapon||getActiveWeapon();
+  if(!weaponCanRenderSplat(usedWeapon))return;
+  const width=(word.w&&word.w>0)?word.w:Math.max(90,(word.text||'').length*24);
+  const height=(word.h&&word.h>0)?word.h:Math.max(50,word.requiredHits*24);
+  splats.push(new Splat(usedWeapon,word.x,word.y,width,height,linger,{partial}));
+}
+
+function resolveWordHit(hitWord,idx,options={}){
+  const weapon=options.weapon||getActiveWeapon();
+  let spawnSplat=weapon?weapon.spawnSplat!==false:false;
+  if(options.spawnSplat===true)spawnSplat=true;
+  if(options.spawnSplat===false)spawnSplat=false;
+  let attempt=options.soundAttempt||null;
+  if(weapon){
+    attempt=playWeaponSound(weapon,'impact',attempt);
+  }
+  const firePhase=attempt&&attempt.phases?attempt.phases.fire:null;
+  const impactPhase=attempt&&attempt.phases?attempt.phases.impact:null;
+  const usedCustomSound=(impactPhase&&impactPhase.usedCustom)||(firePhase&&firePhase.usedCustom);
+  const usedDefaultSound=(impactPhase&&impactPhase.usedDefault)||(firePhase&&firePhase.usedDefault);
+  const defaultSuppressed=(impactPhase&&impactPhase.defaultSuppressed)||(firePhase&&firePhase.defaultSuppressed);
+  const wasPartial=hitWord.hitsLeft>1;
+  const linger=wasPartial?
+    (weapon&&typeof weapon.partialSplatDuration==='number'?weapon.partialSplatDuration:config.partialSplatDuration):
+    (weapon&&typeof weapon.splatDuration==='number'?weapon.splatDuration:config.splatDuration);
+  if(spawnSplat&&weapon){
+    spawnSplat=weaponCanRenderSplat(weapon);
+  }
+  if(spawnSplat&&weapon){
+    createSplat(hitWord,linger,weapon,wasPartial);
+  }
+  if(currentTarget&&hitWord.id===currentTarget.id){
+    if(!usedCustomSound&&!usedDefaultSound&&!defaultSuppressed){
+      playSFX('hit');
+    }
+    const appliedPower=weapon&&typeof weapon.power==='number'?weapon.power:1;
+    const remaining=hitWord.registerHit(appliedPower);
+    if(remaining<=0){
+      score+=10+combo*2;combo++;
+      floating.splice(idx,1);
+      spawnOne();
+      currentTarget=null;
+      stopAudio();
+      setTimeout(()=>{playFor(pickFromScreen());},config.nextDelayOnHit);
+      flash('✔ 正确！',350);
+    }else{
+      if(hitWord.requiredHits>1){
+        hitWord.redirectAfterPartialHit(config.partialHitBoost);
+      }
+      flash(`还需命中 ${remaining} 次`,420);
+    }
+  }else{
+    playSFX('wrong');
+    score=Math.max(0,score-3);
+    combo=0;
+    if(currentTarget&&typeof currentTarget.resetHits==='function'){currentTarget.resetHits();}
+    floating.splice(idx,1);
+    spawnOne();
+    playFor(pickFromScreen());
+    flash('✖ 打错了',650);
+  }
+}
+
+function handleMiss(weapon){
+  if(currentTarget&&typeof currentTarget.resetHits==='function'){currentTarget.resetHits();}
+  combo=0;
+}
+let msgTimer=null;
+function flash(txt,ms=800){messageEl.textContent=txt;messageEl.style.opacity='1';
+if(msgTimer)clearTimeout(msgTimer);msgTimer=setTimeout(()=>{messageEl.style.opacity='0';},ms);}
+
+function updateTimerDisplay(){const totalSeconds=Math.max(0,Math.floor(remainingTimeMs/1000));
+const m=String(Math.floor(totalSeconds/60)).padStart(2,'0');
+const s=String(totalSeconds%60).padStart(2,'0');
+timerEl.textContent=`${m}:${s}`;}
+
+function startTimer(){clearInterval(timerHandle);
+remainingTimeMs=Number(timerSelect.value)*1000;
+updateTimerDisplay();
+timerHandle=setInterval(()=>{
+  if(!running){clearInterval(timerHandle);timerHandle=null;return;}
+  if(paused)return;
+  remainingTimeMs=Math.max(0,remainingTimeMs-1000);
+  updateTimerDisplay();
+  if(remainingTimeMs<=0){endGame();}
+},1000);
+}
+
+function endGame(){running=false;paused=false;pauseBtn.textContent='Pause';
+clearInterval(timerHandle);timerHandle=null;remainingTimeMs=0;updateTimerDisplay();
+projectiles.length=0;splats.length=0;stopAudio();flash('⏰ 时间到！点击 Restart 重新开始',2000);}
+
+function adjustWordSpeed(newSpeed){
+  if(!newSpeed)return;
+  const old=config.wordSpeed||newSpeed;
+  const factor=newSpeed/old;
+  floating.forEach(f=>{
+    f.vx*=factor;
+    f.vy*=factor;
+    if(typeof f.baseVx==='number'&&typeof f.baseVy==='number'){
+      f.baseVx*=factor;
+      f.baseVy*=factor;
+      f.baseSpeed=Math.sqrt(f.baseVx*f.baseVx+f.baseVy*f.baseVy);
+    }
+    f.speed=Math.sqrt(f.vx*f.vx+f.vy*f.vy);
+  });
+  config.wordSpeed=newSpeed;
+}
+
+async function startGame(modeOverride=null){
+  if(modeOverride){
+    setGameMode(modeOverride);
+  }else if(modeSelect){
+    setGameMode(modeSelect.value);
+  }else{
+    setGameMode(MODE_SHOOTING);
+  }
+  if(modeSelect&&modeSelect.value!==gameMode){
+    modeSelect.value=gameMode;
+  }
+  updateModeUI();
+  const menu=document.getElementById('startMenu');
+  const ready=await ensureWordsAvailable();
+  if(!ready||!words.length){
+    const panel=document.getElementById('importPanel');
+    if(panel)panel.hidden=false;
+    if(menu)setStartMenuVisible(true);
+    alert('尚未加载词库，请先上传 JSON 文件或准备好 words.json。');
+    return;
+  }
+  setStartMenuVisible(false);
+  document.getElementById('importPanel').hidden=true;
+  floating.length=0;projectiles.length=0;splats.length=0;spawnBag.length=0;currentTarget=null;score=0;combo=0;round=1;
+  syncLauncherOrigin();
+  if(isToneMode()){
+    activeWeapon=null;
+  }else{
+    setActiveWeapon(weaponSelect?weaponSelect.value:currentWeapon);
+  }
+  adjustWordSpeed(Number(speedSelect.value));
+  loadSFX();for(let i=0;i<config.spawnCount;i++)spawnOne();
+  running=true;paused=false;pauseBtn.textContent='Pause';
+  if(isToneMode()){
+    flash('开始！使用 1-5 或 A/S/D/F/G 选择声调，点击“重播”或按 R 重播。',1600);
+  }else{
+    flash('开始！点击“重播”或按 R 重播同一题。',1200);
+  }
+  startTimer();
+  playFor(pickFromScreen());
+}
+
+/* ===== 启动菜单逻辑 ===== */
+const shootingStartBtn=document.getElementById('shootingStartBtn');
+if(shootingStartBtn){
+  shootingStartBtn.onclick=()=>{
+    startGame(MODE_SHOOTING);
+  };
+}
+const toneStartBtn=document.getElementById('toneStartBtn');
+if(toneStartBtn){
+  toneStartBtn.onclick=()=>{
+    startGame(MODE_TONE);
+  };
+}
+
+document.getElementById('customVocabBtn').onclick = () => {
+  setStartMenuVisible(false);   // 🔹关键：隐藏菜单
+  document.getElementById('importPanel').hidden = false; // 显示导入面板
+};
+
+
+/* ===== 导入面板按钮 ===== */
+const fileInput=document.getElementById('fileInput');
+document.getElementById('saveCacheBtn').onclick=async()=>{
+  const f=fileInput.files&&fileInput.files[0];
+  if(!f)return alert('请先选择要上传的 JSON 文件');
+  const txt=await f.text();
+  loadDatasetFromText(txt,{persist:true,sourceName:f.name||''});
+};
+document.getElementById('useOnceBtn').onclick=async()=>{
+  const f=fileInput.files&&fileInput.files[0];
+  if(!f)return alert('请先选择要上传的 JSON 文件');
+  const txt=await f.text();
+  loadDatasetFromText(txt,{persist:false,sourceName:f.name||''});
+};
+document.getElementById('closeBoxBtn').onclick = () => {
+  document.getElementById('importPanel').hidden = true;  // 关闭导入面板
+  setStartMenuVisible(true);                 // 🔹恢复菜单显示
+};
+
+function toPinyinFromId(id=''){return id.split(/[_\s-]+/).map(syllable=>applyTone(syllable)).join(' ');}
+
+function applyTone(raw){if(!raw)return'';const toneMatch=raw.match(/[1-5]/);const tone=toneMatch?Number(toneMatch[0]):5;
+  let base=raw.replace(/[1-5]/g,'').replace(/v/g,'ü');if(!base)return'';if(tone===5)return base;
+  const toneMarks={a:['ā','á','ǎ','à'],e:['ē','é','ě','è'],i:['ī','í','ǐ','ì'],o:['ō','ó','ǒ','ò'],u:['ū','ú','ǔ','ù'],'ü':['ǖ','ǘ','ǚ','ǜ']};
+  let target='';if(base.includes('a'))target='a';
+  else if(base.includes('e'))target='e';
+  else if(base.includes('ou'))target='o';
+  else if(base.includes('iu'))target='u';
+  else if(base.includes('ui'))target='i';
+  else if(base.includes('o'))target='o';
+  else if(base.includes('i'))target='i';
+  else if(base.includes('u'))target='u';
+  else if(base.includes('ü'))target='ü';
+  if(!target)return base;
+  const mark=toneMarks[target]?.[tone-1];if(!mark)return base;
+  const re=target==='ü'?/ü/:new RegExp(target);
+  return base.replace(re,mark);
+}
+
+function enrichWordsWithPinyin(list){return list.map(w=>({...w,pinyin:w.pinyin||toPinyinFromId(w.id||'')}));}
+
+</script>
 </body>
 </html>
