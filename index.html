@@ -19,13 +19,15 @@
     .nav{position:sticky;top:0;backdrop-filter:blur(8px);background:rgba(8,12,24,.6);border-bottom:1px solid #1f2937;z-index:5}
     .nav-in{display:flex;justify-content:space-between;align-items:center;padding:12px 0}
     .pill{display:inline-flex;gap:8px;border:1px solid #1f2937;padding:8px 12px;border-radius:999px;background:#0b1220}
+    .links{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
     header{padding:42px 0 22px}
     .hero{display:grid;gap:16px;padding:28px;border-radius:var(--radius);background:linear-gradient(135deg,#0b1220 0%,#121a2e 100%);box-shadow:0 8px 24px rgba(0,0,0,.25)}
     .hero h1{font-size:clamp(28px,4.2vw,40px);margin:0}
     .hero p{margin:6px 0 10px;color:#cbd5e1}
     .btns{display:flex;gap:12px;flex-wrap:wrap}
-    .btn{appearance:none;border:2px solid transparent;background:var(--brand);color:#052b14;font-weight:700;border-radius:12px;padding:12px 16px;cursor:pointer}
+    .btn{appearance:none;border:2px solid transparent;background:var(--brand);color:#052b14;font-weight:700;border-radius:12px;padding:12px 16px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;min-width:150px}
     .btn.secondary{background:#172554;color:#c7d2fe;border-color:#1e3a8a}
+    .btn[disabled]{opacity:.5;cursor:default}
     section{margin:36px 0}
     h2{font-size:26px;margin:0 0 8px}
     .muted{color:var(--muted)}
@@ -53,12 +55,19 @@
     .card h3{margin:0;font-size:18px}
     .card p{margin:0 0 4px;color:var(--muted)}
 
+    .card-main{
+      flex:1 1 auto;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
     .card-thumb{
       width:100%;
+      height:auto;          /* 自适应图片原始比例 */
       border-radius:12px;
-      object-fit:contain;      /* 改成完整显示 */
-      aspect-ratio:4/3;        /* 比原来更“方”一点 */
-      background:#020617;      /* 两侧空白时的背景色 */
+      display:block;
+      background:#020617;
       box-shadow:0 4px 16px rgba(0,0,0,.35);
     }
 
@@ -78,7 +87,12 @@
       color:#e5e7eb;
     }
 
-    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:auto;  /* 把按钮推到底部，让三张卡片的按钮对齐 */
+    }
 
     .anchor{scroll-margin-top:100px}
     footer{margin:40px 0 10px;color:#9aa3b2;font-size:14px;text-align:center}
@@ -184,7 +198,7 @@
               </div>
               <h3 class="booking-title">Book a live lesson with Patrick</h3>
               <p class="booking-sub">
-                Book a 1:1 online Chinese lesson: perfect for absolute beginners, speaking improvement, or customized classes for kids.
+                Book a 1:1 online Chinese lesson: perfect for absolute beginners, speaking practice, or customized classes for kids.
               </p>
               <p class="booking-note">
                 Choose a time that works for you — Calendly will automatically add it to your calendar and send you the meeting link.
@@ -193,8 +207,8 @@
             <div class="actions">
               <a class="btn"
                  href="#"
-                 onclick="Calendly.initPopupWidget({url: 'https://calendly.com/patrickct'}); return false;">
-                📅 Book a Lesson
+                 onclick="Calendly.initPopupWidget({url: 'https://calendly.com/your-calendly-link'}); return false;">
+                📅 Book Now
               </a>
             </div>
           </div>
@@ -205,14 +219,16 @@
       <div class="grid" style="margin-top:14px;">
         <!-- Game 1: Shooting Characters -->
         <article class="card">
-          <div class="card-head">
-            <span class="tag">Recommended</span>
-            <h3>Shooting Characters (HSK)</h3>
+          <div class="card-main">
+            <div class="card-head">
+              <span class="tag">Recommended</span>
+              <h3>Shooting Characters (HSK)</h3>
+            </div>
+            <img src="./thumbnails/shooting.png"
+                 alt="Shooting Characters game thumbnail"
+                 class="card-thumb">
+            <p>Listen to the audio, shoot the correct characters, and earn your score.</p>
           </div>
-          <img src="./thumbnails/shooting.png"
-               alt="Shooting Characters game thumbnail"
-               class="card-thumb">
-          <p>Listen to the audio, shoot the correct characters, and earn your score.</p>
           <div class="actions">
             <a class="btn" target="_blank" rel="noopener"
                href="https://shipeng57124.github.io/mandarin-lab/shooting_characters_web.tonal_game.10.28.html">
@@ -223,14 +239,16 @@
 
         <!-- Game 2: Solitaire -->
         <article class="card">
-          <div class="card-head">
-            <span class="tag">New</span>
-            <h3>Chinese Solitaire</h3>
+          <div class="card-main">
+            <div class="card-head">
+              <span class="tag">New</span>
+              <h3>Chinese Solitaire</h3>
+            </div>
+            <img src="./thumbnails/solitaire.png"
+                 alt="Chinese Solitaire game thumbnail"
+                 class="card-thumb">
+            <p>A classic solitaire game with your custom Chinese deck. Best experienced in full screen.</p>
           </div>
-          <img src="./thumbnails/solitaire.png"
-               alt="Chinese Solitaire game thumbnail"
-               class="card-thumb">
-          <p>A classic solitaire game with your custom Chinese deck. Best experienced in full screen.</p>
           <div class="actions">
             <a class="btn" target="_blank" rel="noopener" href="solitaire/index.html">
               Open in New Tab
@@ -240,14 +258,16 @@
 
         <!-- Game 3: Coming soon -->
         <article class="card">
-          <div class="card-head">
-            <span class="tag muted">Coming Soon</span>
-            <h3>Pinyin Shooter</h3>
+          <div class="card-main">
+            <div class="card-head">
+              <span class="tag muted">Coming Soon</span>
+              <h3>Pinyin Shooter</h3>
+            </div>
+            <img src="./thumbnails/pinyin.png"
+                 alt="Pinyin Shooter coming soon thumbnail"
+                 class="card-thumb">
+            <p>Listen and shoot the matching syllable.</p>
           </div>
-          <img src="./thumbnails/pinyin.png"
-               alt="Pinyin Shooter coming soon thumbnail"
-               class="card-thumb">
-          <p>Listen and shoot the matching syllable.</p>
           <div class="actions">
             <button class="btn secondary" disabled>Coming Soon</button>
           </div>
@@ -262,7 +282,7 @@
       <div class="btns">
         <a class="btn"
            href="#"
-           onclick="Calendly.initPopupWidget({url: 'https://calendly.com/patrickct'}); return false;">
+           onclick="Calendly.initPopupWidget({url: 'https://calendly.com/your-calendly-link'}); return false;">
           📅 Book via Calendly
         </a>
       </div>
