@@ -1,403 +1,216 @@
-<!doctype html>
-<html lang="en" data-theme="dark">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="UTF-8" />
+  <title>Mandarin Lab – Mini Chinese Games</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Mandarin Lab ｜ Learn + Play Chinese</title>
-  <meta name="description" content="Mandarin Lab — Learn Chinese the fun way: play mini web games and book 1:1 lessons.">
 
-  <!-- Calendly -->
-  <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
+  <!-- Calendly embed -->
+  <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet" />
   <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
 
   <style>
-    /* ========= 全局变量：苹果液态玻璃风格 ========= */
     :root {
-      --bg-gradient: radial-gradient(circle at 0% 0%, #4f8cff 0, transparent 55%),
-                     radial-gradient(circle at 100% 0%, #ff7ac7 0, transparent 55%),
-                     radial-gradient(circle at 0% 100%, #45f7c2 0, transparent 55%),
-                     #050816;
-      --glass-bg: rgba(15, 23, 42, 0.55);
-      --glass-bg-strong: rgba(15, 23, 42, 0.8);
-      --border-soft: rgba(255, 255, 255, 0.18);
-      --border-strong: rgba(255, 255, 255, 0.28);
-      --text-main: #f9fafb;
-      --text-muted: #9ca3af;
-      --accent: #4f9cff;
-      --accent-soft: rgba(79, 156, 255, 0.35);
-      --danger: #ff7aa2;
-      --radius-xl: 24px;
-      --radius-lg: 20px;
-      --radius-pill: 999px;
-      --blur-strong: 26px;
-      --blur-soft: 18px;
-      --shadow-soft: 0 18px 40px rgba(15, 23, 42, 0.65);
-      --shadow-glow: 0 0 32px rgba(79, 156, 255, 0.45);
-      --card-gap: 24px;
+      --bg-gradient: radial-gradient(circle at 0% 0%, #334155 0, #020617 40%, #020617 100%),
+                     radial-gradient(circle at 100% 100%, #0f172a 0, #020617 60%, #020617 100%);
+      --glass: rgba(15, 23, 42, 0.78);
+      --glass-soft: rgba(15, 23, 42, 0.6);
+      --glass-strong: rgba(15, 23, 42, 0.92);
+      --border-soft: rgba(148, 163, 184, 0.55);
+      --accent: #22c55e;
+      --accent-soft: rgba(34, 197, 94, 0.24);
+      --accent-strong: rgba(34, 197, 94, 0.7);
+      --text-main: #e5e7eb;
+      --text-soft: #9ca3af;
+      --text-dim: #6b7280;
+      --shadow-soft: 0 24px 60px rgba(15, 23, 42, 0.9);
+      --shadow-card: 0 18px 40px rgba(15, 23, 42, 0.75);
+      --radius-xl: 26px;
+      --radius-lg: 22px;
+      --blur-soft: 22px;
+      --blur-strong: 28px;
+      --transition-fast: 180ms ease-out;
+      --transition-med: 220ms ease-out;
     }
 
-    html[data-theme="light"] {
-      --bg-gradient: radial-gradient(circle at 0% 0%, #d0e6ff 0, transparent 55%),
-                     radial-gradient(circle at 100% 0%, #ffd6f1 0, transparent 55%),
-                     radial-gradient(circle at 0% 100%, #c8ffe9 0, transparent 55%),
-                     #e5ecff;
-      --glass-bg: rgba(255, 255, 255, 0.72);
-      --glass-bg-strong: rgba(255, 255, 255, 0.86);
-      --border-soft: rgba(148, 163, 184, 0.3);
-      --border-strong: rgba(148, 163, 184, 0.55);
-      --text-main: #020617;
-      --text-muted: #6b7280;
-      --accent: #2563eb;
-      --accent-soft: rgba(37, 99, 235, 0.28);
-      --danger: #e11d48;
-      --shadow-soft: 0 18px 40px rgba(148, 163, 184, 0.45);
-      --shadow-glow: 0 0 30px rgba(37, 99, 235, 0.55);
-    }
-
-    /* ========= Reset & 布局 ========= */
-    * { box-sizing: border-box; }
-
-    html, body {
+    * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
+    }
+
+    body {
       min-height: 100vh;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
-                   "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", sans-serif;
       color: var(--text-main);
-      background: var(--bg-gradient) fixed;
-      background-size: cover;
+      background: #020617;
+      background-image:
+        radial-gradient(circle at 0% 0%, rgba(96, 165, 250, 0.35), transparent 60%),
+        radial-gradient(circle at 100% 100%, rgba(244, 114, 182, 0.28), transparent 60%),
+        radial-gradient(circle at 0% 100%, rgba(52, 211, 153, 0.18), transparent 55%),
+        radial-gradient(circle at 100% 0%, rgba(251, 191, 36, 0.16), transparent 55%);
+      background-color: #020617;
+      background-blend-mode: screen;
       -webkit-font-smoothing: antialiased;
-      text-rendering: optimizeLegibility;
-      transition: background 0.5s ease, color 0.3s ease;
     }
 
-    a {
-      color: var(--accent);
-      text-decoration: none;
+    .page-shell {
+      min-height: 100vh;
+      backdrop-filter: blur(var(--blur-soft));
+      -webkit-backdrop-filter: blur(var(--blur-soft));
+      display: flex;
+      flex-direction: column;
     }
 
-    .wrap {
-      max-width: 1120px;
-      margin: 0 auto;
-      padding: 20px 20px 40px;
-    }
-
-    .anchor { scroll-margin-top: 100px; }
-
-    /* ========= 顶部导航：毛玻璃 + 渐变描边 ========= */
     .nav {
       position: sticky;
       top: 0;
       z-index: 40;
-      backdrop-filter: blur(22px) saturate(1.6);
-      -webkit-backdrop-filter: blur(22px) saturate(1.6);
-      background: linear-gradient(to bottom, rgba(3, 7, 18, 0.85), rgba(3, 7, 18, 0.4));
-      border-bottom: 1px solid rgba(148, 163, 184, 0.25);
-    }
-
-    .nav-in {
+      padding: 18px 32px 14px;
       display: flex;
+      align-items: center;
       justify-content: space-between;
-      align-items: center;
-      padding: 10px 0;
+      background: linear-gradient(to bottom, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.76), transparent);
+      backdrop-filter: blur(26px);
+      -webkit-backdrop-filter: blur(26px);
+      border-bottom: 1px solid rgba(148, 163, 184, 0.35);
     }
 
-    .brand {
-      font-size: 1.25rem;
-      font-weight: 700;
-      letter-spacing: 0.04em;
-      display: inline-flex;
+    .nav-left {
+      display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      color: #f9fafb;
     }
 
-    .brand-dot {
+    .nav-dot {
       width: 10px;
       height: 10px;
-      border-radius: 50%;
-      background: radial-gradient(circle at 30% 30%, #ffffff, var(--accent));
-      box-shadow: 0 0 12px var(--accent-soft);
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 30%, #bbf7d0, #22c55e);
+      box-shadow: 0 0 18px rgba(34, 197, 94, 0.95);
     }
 
-    .links {
+    .nav-links {
       display: flex;
+      align-items: center;
       gap: 12px;
-      flex-wrap: wrap;
-      align-items: center;
     }
 
-    /* ========= 顶部开关：圆角 + 轻玻璃 ========= */
-    .theme-switch {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13px;
-      color: var(--text-muted);
-    }
-
-    .switch-label {
-      position: relative;
-      display: inline-block;
-      width: 50px;
-      height: 26px;
-      border-radius: var(--radius-pill);
-      background: linear-gradient(135deg,
-                  rgba(15, 23, 42, 0.7),
-                  rgba(30, 64, 175, 0.9));
-      border: 1px solid rgba(148, 163, 184, 0.5);
-      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.65);
-      cursor: pointer;
-      overflow: hidden;
-    }
-
-    .switch-input { opacity: 0; width: 0; height: 0; }
-
-    .slider {
-      position: absolute;
-      inset: 1px;
-      border-radius: var(--radius-pill);
-      backdrop-filter: blur(16px) saturate(1.6);
-      -webkit-backdrop-filter: blur(16px) saturate(1.6);
-      background: linear-gradient(120deg,
-                  rgba(15, 23, 42, 0.8),
-                  rgba(15, 23, 42, 0.35));
-      transition: background 0.3s ease;
-    }
-
-    .slider::before {
-      content: "☾";
-      position: absolute;
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      left: 2px;
-      top: 1px;
-      background: radial-gradient(circle at 30% 20%, #ffffff, #e5e7eb);
-      color: #0f172a;
+    .nav-btn {
+      border-radius: 999px;
+      padding: 7px 15px;
       font-size: 14px;
-      display: grid;
-      place-items: center;
-      box-shadow: 0 6px 14px rgba(15, 23, 42, 0.55);
-      transition: transform 0.32s cubic-bezier(0.22, 0.61, 0.36, 1),
-                  box-shadow 0.32s ease, background 0.32s ease;
-    }
-
-    .switch-input:checked + .slider::before {
-      transform: translateX(22px);
-      content: "☀️";
-      box-shadow: 0 3px 10px rgba(148, 163, 184, 0.85);
-    }
-
-    /* ========= 导航 pill：通透玻璃 + hover 流光 ========= */
-    .pill {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 7px 16px;
-      border-radius: var(--radius-pill);
-      font-size: 0.9rem;
-      color: var(--text-main);
-      border: 1px solid var(--border-soft);
-      background: radial-gradient(circle at 0 0, rgba(255,255,255,0.2), transparent 55%),
-                  var(--glass-bg);
-      backdrop-filter: blur(18px) saturate(1.7);
-      -webkit-backdrop-filter: blur(18px) saturate(1.7);
-      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.55);
-      overflow: hidden;
-      transition: box-shadow 0.25s ease, border-color 0.25s ease, transform 0.18s ease;
-    }
-
-    .pill::before {
-      content: "";
-      position: absolute;
-      inset: -60%;
-      background: conic-gradient(from 180deg,
-                   rgba(79, 156, 255, 0.0),
-                   rgba(79, 156, 255, 0.7),
-                   rgba(244, 114, 182, 0.5),
-                   rgba(45, 212, 191, 0.5),
-                   rgba(79, 156, 255, 0.0));
-      opacity: 0;
-      transform: translateX(-60%);
-      transition: opacity 0.35s ease, transform 0.35s ease;
-    }
-
-    .pill:hover {
-      border-color: var(--border-strong);
-      box-shadow: var(--shadow-glow);
-      transform: translateY(-1px);
-    }
-
-    .pill:hover::before {
-      opacity: 0.8;
-      transform: translateX(0);
-    }
-
-    /* ========= Hero：大玻璃卡 + 渐变光晕 ========= */
-    header {
-      padding: 36px 0 20px;
-    }
-
-    .hero {
-      position: relative;
-      padding: 30px 26px 30px;
-      border-radius: 28px;
-      background: radial-gradient(circle at 0 0,
-                    rgba(79, 156, 255, 0.25),
-                    transparent 55%),
-                  radial-gradient(circle at 100% 100%,
-                    rgba(244, 114, 182, 0.22),
-                    transparent 55%),
-                  var(--glass-bg-strong);
-      border: 1px solid var(--border-strong);
-      backdrop-filter: blur(var(--blur-strong)) saturate(1.8);
-      -webkit-backdrop-filter: blur(var(--blur-strong)) saturate(1.8);
-      box-shadow: var(--shadow-soft);
-      overflow: hidden;
-    }
-
-    .hero::after {
-      content: "";
-      position: absolute;
-      width: 260px;
-      height: 260px;
-      border-radius: 50%;
-      right: -80px;
-      top: -80px;
-      background: radial-gradient(circle, rgba(79, 156, 255, 0.5), transparent 60%);
-      opacity: 0.75;
-      filter: blur(4px);
-      pointer-events: none;
-    }
-
-    .hero h1 {
-      font-size: clamp(32px, 4vw, 44px);
-      margin: 0;
-      letter-spacing: 0.02em;
-    }
-
-    .hero p {
-      margin: 10px 0 6px;
-      color: var(--text-muted);
-      font-size: 1.05rem;
-    }
-
-    .btns {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 14px;
-      margin-top: 14px;
-    }
-
-    /* ========= 核心按钮：液态流动光效 ========= */
-    .btn {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      min-width: 160px;
-      padding: 11px 22px;
-      border-radius: var(--radius-pill);
-      border: 1px solid rgba(255, 255, 255, 0.4);
-      color: #0b1220;
-      font-weight: 600;
-      font-size: 0.98rem;
-      cursor: pointer;
-      overflow: hidden;
-      background-image: linear-gradient(120deg, #ffffff, #e0f2fe, #bfdbfe);
-      background-size: 220% 220%;
-      transition: transform 0.16s ease, box-shadow 0.26s ease, background-position 0.5s ease;
-      box-shadow: 0 14px 35px rgba(15, 23, 42, 0.7);
-    }
-
-    .btn::before {
-      /* 液态流光层 */
-      content: "";
-      position: absolute;
-      inset: -40%;
-      background: conic-gradient(from 0deg,
-                   rgba(255,255,255,0.0),
-                   rgba(255,255,255,0.85),
-                   rgba(255,255,255,0.0),
-                   rgba(255,255,255,0.85),
-                   rgba(255,255,255,0.0));
-      mix-blend-mode: screen;
-      opacity: 0;
-      transform: translateX(-60%);
-      transition: opacity 0.45s ease, transform 0.55s ease;
-      pointer-events: none;
-    }
-
-    .btn:hover {
-      transform: translateY(-1px);
-      background-position: 100% 0;
-      box-shadow: var(--shadow-glow);
-    }
-
-    .btn:hover::before {
-      opacity: 0.9;
-      transform: translateX(0);
-    }
-
-    .btn:active {
-      transform: translateY(1px) scale(0.98);
-      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.7);
-    }
-
-    .btn.secondary {
-      background-image: linear-gradient(135deg,
-                        rgba(15,23,42,0.95),
-                        rgba(15,23,42,0.7));
-      color: var(--text-main);
-      border-color: var(--border-soft);
-    }
-
-    .btn.secondary::before {
-      background: radial-gradient(circle at 0 0, rgba(79, 156, 255, 0.6), transparent 55%);
-    }
-
-    .btn[disabled] {
-      opacity: 0.6;
-      cursor: default;
-      box-shadow: none;
-    }
-
-    /* ========= 章节标题 ========= */
-    section { margin: 36px 0; }
-
-    h2 {
-      margin: 0 0 6px;
-      font-size: 1.6rem;
-      letter-spacing: 0.03em;
-    }
-
-    h3 {
-      margin: 0;
-      font-size: 1.1rem;
-    }
-
-    .muted { color: var(--text-muted); }
-
-    .grid {
-      display: grid;
-      gap: var(--card-gap);
-      grid-template-columns: repeat(12, 1fr);
-    }
-
-    /* ========= 订课玻璃卡片 ========= */
-    .booking-card {
-      grid-column: span 12;
-      border-radius: var(--radius-xl);
-      padding: 26px 24px;
-      background: linear-gradient(135deg,
-                    rgba(15, 23, 42, 0.88),
-                    rgba(15, 23, 42, 0.6));
       border: 1px solid rgba(148, 163, 184, 0.55);
-      box-shadow: var(--shadow-soft);
+      color: var(--text-main);
+      background: radial-gradient(circle at 0 0, rgba(148, 163, 184, 0.24), rgba(15, 23, 42, 0.9));
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.7);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast), color var(--transition-fast);
+    }
+
+    .nav-btn-primary {
+      border-color: transparent;
+      background: radial-gradient(circle at 0 0, rgba(52, 211, 153, 0.55), rgba(22, 163, 74, 0.95));
+      box-shadow: 0 12px 32px rgba(34, 197, 94, 0.85);
+      color: #022c22;
+      font-weight: 600;
+    }
+
+    .nav-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 34px rgba(15, 23, 42, 0.85);
+      border-color: rgba(248, 250, 252, 0.32);
+    }
+
+    .nav-btn-primary:hover {
+      transform: translateY(-1.5px);
+      box-shadow: 0 18px 40px rgba(34, 197, 94, 0.98);
+    }
+
+    .nav-btn span.icon {
+      font-size: 14px;
+    }
+
+    .content {
+      padding: 32px;
+      max-width: 1120px;
+      width: 100%;
+      margin: 0 auto 40px;
+    }
+
+    .section-heading {
+      margin-bottom: 18px;
+    }
+
+    .section-heading h1 {
+      font-size: clamp(32px, 4vw, 40px);
+      font-weight: 750;
+      letter-spacing: 0.02em;
+      color: #f9fafb;
+      text-shadow: 0 12px 30px rgba(15, 23, 42, 0.9);
+    }
+
+    .section-heading p {
+      margin-top: 10px;
+      max-width: 620px;
+      color: var(--text-soft);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .booking-shell {
+      margin-bottom: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 999px;
+      padding: 5px 12px;
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #e5e7eb;
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.7));
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.8);
+      width: fit-content;
+    }
+
+    .chip-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 30%, #a7f3d0, #22c55e);
+      box-shadow: 0 0 12px rgba(34, 197, 94, 0.9);
+    }
+
+    .booking-card {
+      border-radius: var(--radius-xl);
+      padding: 26px 26px 26px 26px;
+      background: linear-gradient(135deg,
+                rgba(15, 23, 42, 0.92),
+                rgba(15, 23, 42, 0.78));
+      border: 1px solid rgba(148, 163, 184, 0.55);
+      box-shadow: var(--shadow-card);
       backdrop-filter: blur(var(--blur-soft)) saturate(1.7);
       -webkit-backdrop-filter: blur(var(--blur-soft)) saturate(1.7);
+      display: flex;
+      gap: 30px;
+      align-items: center;
+      justify-content: space-between;
       position: relative;
       overflow: hidden;
     }
@@ -405,407 +218,552 @@
     .booking-card::before {
       content: "";
       position: absolute;
-      width: 220px;
-      height: 220px;
-      left: -70px;
-      top: -70px;
-      border-radius: 50%;
-      background: radial-gradient(circle,
-                    rgba(79, 156, 255, 0.42),
-                    transparent 70%);
-      opacity: 0.85;
+      inset: -40%;
+      background:
+        radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.35), transparent 60%),
+        radial-gradient(circle at 100% 100%, rgba(244, 114, 182, 0.25), transparent 60%);
+      opacity: 0.65;
+      mix-blend-mode: screen;
       pointer-events: none;
     }
 
     .booking-inner {
       position: relative;
+      z-index: 1;
+      flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 16px;
-      z-index: 1;
+      gap: 14px;
+    }
+
+    .booking-tag-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 4px;
     }
 
     .booking-pill {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 6px 14px;
-      border-radius: var(--radius-pill);
-      background: rgba(15, 23, 42, 0.85);
-      color: #e0f2fe;
-      font-size: 0.86rem;
+      border-radius: 999px;
+      padding: 7px 13px;
+      font-size: 12px;
+      background: radial-gradient(circle at 0 0, rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.9));
       border: 1px solid rgba(148, 163, 184, 0.6);
-      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.85);
+      color: #e5e7eb;
+    }
+
+    .booking-pill-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 30%, #bfdbfe, #1d4ed8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #eff6ff;
+      font-size: 12px;
+      box-shadow: 0 0 18px rgba(59, 130, 246, 0.8);
     }
 
     .booking-title {
-      font-size: 1.3rem;
-      margin: 4px 0 6px;
+      font-size: 22px;
+      font-weight: 680;
+      letter-spacing: 0.015em;
+      color: #f9fafb;
     }
 
-    .booking-sub {
-      margin: 0;
-      color: var(--text-muted);
+    .booking-body {
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--text-soft);
+      max-width: 520px;
+    }
+
+    .booking-body span {
+      color: #e5e7eb;
+      font-weight: 500;
+    }
+
+    .booking-actions {
+      position: relative;
+      z-index: 1;
+      min-width: 210px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 12px;
+    }
+
+    .btn-primary {
+      border-radius: 999px;
+      padding: 12px 22px;
+      font-size: 15px;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+      color: #022c22;
+      background: radial-gradient(circle at 0 0, rgba(74, 222, 128, 0.94), #16a34a);
+      box-shadow:
+        0 18px 40px rgba(22, 163, 74, 0.9),
+        0 0 0 1px rgba(187, 247, 208, 0.6);
+      position: relative;
+      overflow: hidden;
+      text-decoration: none;
+      transition: transform var(--transition-med), box-shadow var(--transition-med), background var(--transition-med), filter var(--transition-med);
+    }
+
+    .btn-primary::before {
+      content: "";
+      position: absolute;
+      inset: -60%;
+      background:
+        radial-gradient(circle at 0 0, rgba(250, 250, 250, 0.6), transparent 55%),
+        radial-gradient(circle at 100% 100%, rgba(96, 165, 250, 0.5), transparent 55%);
+      opacity: 0;
+      transform: translate3d(-15%, -15%, 0);
+      transition: opacity 260ms ease-out, transform 260ms ease-out;
+      mix-blend-mode: screen;
+      pointer-events: none;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1.5px) scale(1.01);
+      box-shadow:
+        0 24px 55px rgba(22, 163, 74, 0.98),
+        0 0 0 1px rgba(224, 242, 254, 0.8);
+      filter: saturate(1.1);
+    }
+
+    .btn-primary:hover::before {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+
+    .btn-primary span.icon {
+      font-size: 16px;
     }
 
     .booking-note {
-      margin: 8px 0 0;
-      font-size: 0.9rem;
-      color: var(--text-muted);
+      font-size: 12px;
+      color: var(--text-dim);
+      max-width: 260px;
+      text-align: right;
     }
 
-    /* ========= 游戏卡片：透明玻璃卡 ========= */
+    .section-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 6px 0 14px;
+      gap: 12px;
+    }
+
+    .section-title-row h2 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #e5e7eb;
+    }
+
+    .section-title-row span {
+      font-size: 13px;
+      color: var(--text-dim);
+    }
+
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      margin-bottom: 28px;
+    }
+
     .card {
-      grid-column: span 12;
+      position: relative;
       border-radius: var(--radius-lg);
-      padding: 18px 18px 16px;
-      background: linear-gradient(135deg,
-                    rgba(15, 23, 42, 0.9),
-                    rgba(15, 23, 42, 0.62));
-      border: 1px solid var(--border-soft);
-      box-shadow: var(--shadow-soft);
-      backdrop-filter: blur(var(--blur-soft)) saturate(1.7);
-      -webkit-backdrop-filter: blur(var(--blur-soft)) saturate(1.7);
+      padding: 15px 15px 16px;
+      background: linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.8));
+      border: 1px solid rgba(148, 163, 184, 0.55);
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(var(--blur-soft)) saturate(1.5);
+      -webkit-backdrop-filter: blur(var(--blur-soft)) saturate(1.5);
+      overflow: hidden;
       display: flex;
       flex-direction: column;
-      gap: 14px;
-      position: relative;
-      overflow: hidden;
+      gap: 10px;
     }
 
     .card::before {
       content: "";
       position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at 0 0,
-                    rgba(79, 156, 255, 0.22),
-                    transparent 55%);
-      opacity: 0.6;
-      mix-blend-mode: soft-light;
+      inset: -40%;
+      background:
+        radial-gradient(circle at 0% 0%, rgba(96, 165, 250, 0.45), transparent 60%),
+        radial-gradient(circle at 100% 100%, rgba(244, 114, 182, 0.35), transparent 60%);
+      opacity: 0.38;
+      mix-blend-mode: screen;
       pointer-events: none;
     }
 
-    .card-main {
+    .card-header {
       position: relative;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
       z-index: 1;
-    }
-
-    .card-head {
       display: flex;
-      flex-direction: column;
-      gap: 4px;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
     }
 
-    .card p {
-      margin: 0 0 4px;
-      color: var(--text-muted);
-      font-size: 0.94rem;
+    .card-title {
+      font-weight: 600;
+      font-size: 16px;
+      color: #f9fafb;
+    }
+
+    .badge {
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      color: #e5e7eb;
+      background: radial-gradient(circle at 0 0, rgba(15, 23, 42, 0.5), rgba(15, 23, 42, 0.9));
+    }
+
+    .badge-recommended {
+      border-color: rgba(52, 211, 153, 0.9);
+      background: radial-gradient(circle at 0 0, rgba(52, 211, 153, 0.4), rgba(22, 163, 74, 0.95));
+      color: #022c22;
+      font-weight: 600;
+    }
+
+    .badge-new {
+      border-color: rgba(59, 130, 246, 0.75);
+      background: radial-gradient(circle at 0 0, rgba(59, 130, 246, 0.4), rgba(30, 64, 175, 0.95));
+      color: #eff6ff;
+    }
+
+    .badge-soon {
+      border-color: rgba(148, 163, 184, 0.9);
+      background: radial-gradient(circle at 0 0, rgba(31, 41, 55, 0.9), rgba(15, 23, 42, 0.95));
+      color: #e5e7eb;
     }
 
     .card-thumb {
-      width: 100%;
-      border-radius: 16px;
-      border: 1px solid rgba(148, 163, 184, 0.45);
-      object-fit: cover;
-      max-height: 220px;
-      display: block;
-      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.8);
-    }
-
-    .tag {
-      align-self: flex-start;
-      padding: 4px 10px;
-      border-radius: var(--radius-pill);
-      font-size: 0.78rem;
-      font-weight: 600;
-      background: linear-gradient(135deg, #22c55e, #bbf7d0);
-      color: #052e16;
-    }
-
-    .tag.muted {
-      background: linear-gradient(135deg, #6b7280, #d1d5db);
-      color: #020617;
-    }
-
-    .actions {
       position: relative;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: auto;
       z-index: 1;
-    }
-
-    /* ========= 联系方式 ========= */
-    #contact .card {
-      grid-column: span 12;
-      background: linear-gradient(135deg,
-                    rgba(15, 23, 42, 0.9),
-                    rgba(15, 23, 42, 0.7));
-    }
-
-    /* ========= 页脚 ========= */
-    footer {
-      padding: 6px 20px 24px;
-      text-align: center;
-      color: var(--text-muted);
-      font-size: 0.85rem;
-    }
-
-    /* ========= 响应式 ========= */
-    @media (min-width: 720px) {
-      .card { grid-column: span 6; }
-      .booking-inner { flex-direction: row; justify-content: space-between; align-items: center; }
-      .booking-inner > div:first-child { max-width: 70%; }
-    }
-
-    @media (min-width: 1024px) {
-      .card { grid-column: span 4; }
-    }
-
-    /* ========= 页面加载液态波纹动画 ========= */
-    .page-loader {
-      position: fixed;
-      inset: 0;
-      z-index: 100;
-      display: grid;
-      place-items: center;
-      background: radial-gradient(circle at 10% 0%, #4f8cff 0, transparent 60%),
-                  radial-gradient(circle at 90% 100%, #ff7ac7 0, transparent 60%),
-                  #020617;
-      transition: opacity 0.45s ease, visibility 0.45s ease;
-    }
-
-    .page-loader.hidden {
-      opacity: 0;
-      visibility: hidden;
-    }
-
-    .ripple {
-      position: relative;
-      width: 70px;
-      height: 70px;
-      border-radius: 50%;
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      background: rgba(15, 23, 42, 0.85);
-      border: 1px solid rgba(148, 163, 184, 0.8);
-      box-shadow: 0 0 30px rgba(148, 163, 184, 0.9);
+      border-radius: 18px;
       overflow: hidden;
+      background: radial-gradient(circle at 0 0, rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 1));
+      border: 1px solid rgba(30, 64, 175, 0.5);
+      box-shadow: 0 18px 36px rgba(15, 23, 42, 0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      height: 190px;            /* 固定高度，方便缩略图完整显示 */
     }
 
-    .ripple::before,
-    .ripple::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: 50%;
-      border: 3px solid rgba(255, 255, 255, 0.7);
-      transform: scale(0);
-      opacity: 1;
-      animation: wave 1.7s cubic-bezier(0.19, 1, 0.22, 1) infinite;
+    .card-thumb img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;      /* ⭐ 尽量完整显示整个缩略图 */
+      display: block;
     }
 
-    .ripple::after {
-      animation-delay: 0.6s;
+    .card-body {
+      position: relative;
+      z-index: 1;
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text-soft);
+      min-height: 50px;
     }
 
-    @keyframes wave {
-      0% { transform: scale(0); opacity: 0.9; }
-      70% { transform: scale(1.6); opacity: 0.35; }
-      100% { transform: scale(2); opacity: 0; }
+    .card-actions {
+      position: relative;
+      z-index: 1;
+      margin-top: 6px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-secondary {
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 13px;
+      border: 1px solid rgba(148, 163, 184, 0.65);
+      background: radial-gradient(circle at 0 0, rgba(148, 163, 184, 0.25), rgba(15, 23, 42, 0.95));
+      color: var(--text-main);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast), color var(--transition-fast);
+    }
+
+    .btn-secondary:hover {
+      transform: translateY(-1px);
+      border-color: rgba(248, 250, 252, 0.4);
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.9);
+      background: radial-gradient(circle at 0 0, rgba(148, 163, 184, 0.35), rgba(15, 23, 42, 0.98));
+    }
+
+    .btn-soon {
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 13px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      background: radial-gradient(circle at 0 0, rgba(31, 41, 55, 0.9), rgba(15, 23, 42, 0.98));
+      color: var(--text-soft);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: default;
+    }
+
+    .section-contact {
+      margin-top: 16px;
+      border-radius: var(--radius-lg);
+      padding: 18px 18px 22px;
+      background: linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.9));
+      border: 1px solid rgba(148, 163, 184, 0.55);
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(var(--blur-soft)) saturate(1.4);
+      -webkit-backdrop-filter: blur(var(--blur-soft)) saturate(1.4);
+    }
+
+    .section-contact h2 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #e5e7eb;
+    }
+
+    .section-contact ul {
+      list-style: none;
+      padding-left: 0;
+      margin: 0;
+      font-size: 13px;
+      color: var(--text-soft);
+    }
+
+    .section-contact li + li {
+      margin-top: 4px;
+    }
+
+    .section-contact span.label {
+      color: #e5e7eb;
+      font-weight: 500;
+    }
+
+    @media (max-width: 960px) {
+      .content {
+        padding: 24px 18px 32px;
+      }
+
+      .booking-card {
+        flex-direction: column;
+        padding: 22px 18px 18px;
+        align-items: flex-start;
+      }
+
+      .booking-actions {
+        align-items: flex-start;
+        min-width: 0;
+        width: 100%;
+      }
+
+      .booking-note {
+        text-align: left;
+      }
+
+      .games-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 720px) {
+      .nav {
+        padding: 14px 16px 10px;
+      }
+
+      .nav-links {
+        gap: 8px;
+      }
+
+      .content {
+        padding: 20px 16px 28px;
+      }
+
+      .section-heading h1 {
+        font-size: 26px;
+      }
+
+      .section-heading p {
+        font-size: 14px;
+      }
+
+      .booking-card {
+        border-radius: 22px;
+      }
+
+      .games-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .card-thumb {
+        height: 180px;
+      }
     }
   </style>
 </head>
 <body>
-  <!-- 液态波纹加载动画 -->
-  <div class="page-loader" id="page-loader">
-    <div class="ripple"></div>
-  </div>
-
-  <div class="nav">
-    <div class="wrap nav-in">
-      <div class="brand">
-        <span class="brand-dot"></span>
+  <div class="page-shell">
+    <!-- 顶部导航 -->
+    <header class="nav">
+      <div class="nav-left">
+        <span class="nav-dot"></span>
         <span>Mandarin Lab</span>
       </div>
-      <div class="links">
-        <div class="theme-switch">
-          <label class="switch-label">
-            <input type="checkbox" id="theme-toggle" class="switch-input">
-            <span class="slider"></span>
-          </label>
-          <span id="mode-text">Dark Mode</span>
+      <div class="nav-links">
+        <a href="#booking" class="nav-btn nav-btn-primary">
+          <span class="icon">📅</span>
+          <span>Book a Lesson</span>
+        </a>
+        <a href="#games" class="nav-btn">Games</a>
+        <a href="#contact" class="nav-btn">Contact</a>
+      </div>
+    </header>
+
+    <main class="content">
+      <!-- 订课标题 + 卡片 -->
+      <section id="booking" class="booking-shell">
+        <div class="section-heading">
+          <h1>Level up faster—together.</h1>
+          <p>
+            1:1 speaking practice, kids’ Chinese, and solid foundations.
+            Start with a friendly trial lesson.
+          </p>
         </div>
 
-        <a class="pill" href="#booking">Book a Lesson</a>
-        <a class="pill" href="#games">Games</a>
-        <a class="pill" href="#contact">Contact</a>
-      </div>
-    </div>
-  </div>
-
-  <header class="wrap">
-    <div class="hero">
-      <h1>Learn Chinese the fun way.</h1>
-      <p>Play a mini game or book a friendly 1:1 lesson today.</p>
-      <div class="btns">
-        <a class="btn" href="#games">▶ Start Playing</a>
-        <a class="btn secondary" href="#booking">📅 Book a Lesson</a>
-      </div>
-    </div>
-  </header>
-
-  <main class="wrap">
-    <!-- 订课区块 -->
-    <section id="booking" class="anchor">
-      <h2>Level up faster—together.</h2>
-      <p class="muted">1:1 speaking practice, kids’ Chinese, and solid foundations. Start with a friendly trial lesson.</p>
-
-      <div class="grid">
-        <article class="card booking-card">
+        <div class="booking-card">
           <div class="booking-inner">
-            <div>
+            <div class="booking-tag-row">
               <div class="booking-pill">
-                <span>🎓</span><span>1:1 Chinese Lessons</span>
+                <div class="booking-pill-icon">🎓</div>
+                <span>1:1 Chinese Lessons</span>
               </div>
-              <h3 class="booking-title">Book a live lesson with Patrick</h3>
-              <p class="booking-sub">
-                Book a 1:1 online Chinese lesson: perfect for absolute beginners, speaking practice, or customized classes for kids.
-              </p>
-              <p class="booking-note">
-                Choose a time that works for you — Calendly will automatically add it to your calendar and send you the meeting link.
-              </p>
             </div>
-            <div class="actions">
-              <a class="btn"
-                 href="#"
-                 onclick="Calendly.initPopupWidget({url: 'https://calendly.com/patrickct'}); return false;">
-                📅 Book Now
+            <div class="booking-title">
+              Book a live lesson with Patrick
+            </div>
+            <div class="booking-body">
+              Book a 1:1 online Chinese lesson:
+              <span>perfect for absolute beginners, speaking improvement, or customized classes for kids.</span>
+              Choose a time that works for you — Calendly will automatically add it to your calendar and send you the meeting link.
+            </div>
+          </div>
+
+          <div class="booking-actions">
+            <button
+              class="btn-primary"
+              onclick="Calendly.initPopupWidget({url: 'https://calendly.com/patrickct'}); return false;">
+              <span class="icon">📅</span>
+              <span>Book Now</span>
+            </button>
+            <div class="booking-note">
+              Calendly handles the time zones, calendar invites, and Zoom link for you.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Mini games -->
+      <section id="games">
+        <div class="section-title-row">
+          <h2>Mini Chinese Games</h2>
+          <span>Grow your vocab, pinyin skills, and reaction time—while having fun.</span>
+        </div>
+
+        <div class="games-grid">
+          <!-- Shooting Characters -->
+          <article class="card">
+            <div class="card-header">
+              <h3 class="card-title">Shooting Characters (HSK)</h3>
+              <span class="badge badge-recommended">Recommended</span>
+            </div>
+            <div class="card-thumb">
+              <img src="thumbnails/shooting-characters.png" alt="Shooting Characters thumbnail" />
+            </div>
+            <div class="card-body">
+              Listen to the audio, shoot the correct characters, and earn your score.
+            </div>
+            <div class="card-actions">
+              <a class="btn-secondary" href="shooting_characters_web.tonal_game.10.28.html" target="_blank" rel="noopener">
+                <span>Open in New Tab</span>
               </a>
             </div>
-          </div>
-        </article>
-      </div>
-    </section>
+          </article>
 
-    <!-- 游戏卡片 -->
-    <section id="games" class="anchor">
-      <h2>Mini Chinese Games</h2>
-      <p class="muted">Grow your vocab, pinyin skills, and reaction time—while having fun.</p>
-
-      <div class="grid" style="margin-top:20px;">
-        <article class="card">
-          <div class="card-main">
-            <div class="card-head">
-              <span class="tag">Recommended</span>
-              <h3>Shooting Characters (HSK)</h3>
+          <!-- Chinese Solitaire -->
+          <article class="card">
+            <div class="card-header">
+              <h3 class="card-title">Chinese Solitaire</h3>
+              <span class="badge badge-new">New</span>
             </div>
-            <img src="./thumbnails/shooting.png"
-                 alt="Shooting Characters game thumbnail"
-                 class="card-thumb">
-            <p>Listen to the audio, shoot the correct characters, and earn your score.</p>
-          </div>
-          <div class="actions">
-            <a class="btn" target="_blank" rel="noopener"
-               href="https://shipeng57124.github.io/mandarin-lab/shooting_characters_web.tonal_game.10.28.html">
-              Open in New Tab
-            </a>
-          </div>
-        </article>
-
-        <article class="card">
-          <div class="card-main">
-            <div class="card-head">
-              <span class="tag">New</span>
-              <h3>Chinese Solitaire</h3>
+            <div class="card-thumb">
+              <img src="thumbnails/solitaire.png" alt="Chinese Solitaire thumbnail" />
             </div>
-            <img src="./thumbnails/solitaire.png"
-                 alt="Chinese Solitaire game thumbnail"
-                 class="card-thumb">
-            <p>A classic solitaire game with your custom Chinese deck. Best experienced in full screen.</p>
-          </div>
-          <div class="actions">
-            <a class="btn" target="_blank" rel="noopener" href="solitaire/index.html">
-              Open in New Tab
-            </a>
-          </div>
-        </article>
-
-        <article class="card">
-          <div class="card-main">
-            <div class="card-head">
-              <span class="tag muted">Coming Soon</span>
-              <h3>Pinyin Shooter</h3>
+            <div class="card-body">
+              A classic solitaire game with your custom Chinese deck.
+              Best experienced in full screen.
             </div>
-            <img src="./thumbnails/pinyin.png"
-                 alt="Pinyin Shooter coming soon thumbnail"
-                 class="card-thumb">
-            <p>Listen and shoot the matching syllable.</p>
-          </div>
-          <div class="actions">
-            <button class="btn secondary" disabled>Coming Soon</button>
-          </div>
-        </article>
-      </div>
-    </section>
+            <div class="card-actions">
+              <a class="btn-secondary" href="solitaire/" target="_blank" rel="noopener">
+                <span>Open in New Tab</span>
+              </a>
+            </div>
+          </article>
 
-    <!-- 联系方式 -->
-    <section id="contact" class="anchor">
-      <h2>Contact</h2>
-      <div class="grid" style="margin-top:12px;">
-        <article class="card">
-          <div class="card-head">
-            <h3>How to reach me</h3>
-          </div>
-          <p class="muted">Replace with your actual info:</p>
-          <p>
-            📧 Email: <a href="mailto:your@email.com">your@email.com</a><br/>
-            ▶️ YouTube: <a href="https://youtube.com/@yourchannel" target="_blank" rel="noopener">@yourchannel</a><br/>
-            💬 WeChat: Add me and say “Chinese learner”.
-          </p>
-        </article>
-      </div>
-    </section>
-  </main>
+          <!-- Pinyin Shooter (coming soon) -->
+          <article class="card">
+            <div class="card-header">
+              <h3 class="card-title">Pinyin Shooter</h3>
+              <span class="badge badge-soon">Coming Soon</span>
+            </div>
+            <div class="card-thumb">
+              <img src="thumbnails/pinyin-shooter-coming-soon.png" alt="Pinyin Shooter coming soon thumbnail" />
+            </div>
+            <div class="card-body">
+              Listen and shoot the matching syllable.
+            </div>
+            <div class="card-actions">
+              <div class="btn-soon">
+                <span>Coming Soon</span>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
 
-  <footer>
-    © <script>document.write(new Date().getFullYear())</script> Mandarin Lab · Learn + Play Chinese
-  </footer>
-
-  <script>
-    // 主题切换逻辑（保持你原来的功能）
-    const toggle = document.getElementById('theme-toggle');
-    const html = document.documentElement;
-    const modeText = document.getElementById('mode-text');
-
-    html.setAttribute('data-theme', 'dark');
-    modeText.textContent = 'Dark Mode';
-
-    toggle.addEventListener('change', function () {
-      if (this.checked) {
-        html.setAttribute('data-theme', 'light');
-        modeText.textContent = 'Light Mode';
-      } else {
-        html.setAttribute('data-theme', 'dark');
-        modeText.textContent = 'Dark Mode';
-      }
-    });
-
-    if (html.getAttribute('data-theme') === 'light') {
-      toggle.checked = true;
-    } else {
-      toggle.checked = false;
-    }
-
-    // 页面加载完后隐藏液态波纹 loader
-    window.addEventListener('load', () => {
-      const loader = document.getElementById('page-loader');
-      if (loader) loader.classList.add('hidden');
-    });
-  </script>
+      <!-- Contact -->
+      <section id="contact" class="section-contact">
+        <h2>Contact</h2>
+        <ul>
+          <li><span class="label">Email:</span> your@email.com</li>
+          <li><span class="label">YouTube:</span> @yourchannel</li>
+          <li><span class="label">WeChat:</span> Add me and say “Chinese learner”.</li>
+        </ul>
+      </section>
+    </main>
+  </div>
 </body>
 </html>
